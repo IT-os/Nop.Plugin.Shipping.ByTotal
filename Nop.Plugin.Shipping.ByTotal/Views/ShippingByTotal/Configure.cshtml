@@ -1,0 +1,146 @@
+﻿@{
+    Layout = "";
+}
+@model ShippingByTotalListModel
+@using Nop.Plugin.Shipping.ByTotal.Models;
+@using Nop.Web.Framework;
+@using Telerik.Web.Mvc.UI;
+@* Need the following to close the form tag opened in Presentation\Nop.Web\Administration\Views\Shipping\ConfigureProvider
+   -as this configure view uses forms and nested forms cause display amd grid refresh errors in IE *@
+</form>
+<table class="adminContent">
+    <tr>
+        <td>
+            @(Html.Telerik().Grid(Model.Records)
+                    .Name("Grid")
+                    .DataKeys(keys => keys.Add(x => x.Id).RouteKey("Id"))
+                    .DataBinding(dataBinding => dataBinding
+                        .Ajax()
+                            .Select("RatesList", "ShippingByTotal", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Shipping.ByTotal.Controllers" }, { "area", "" } })
+                            .Update("RateUpdate", "ShippingByTotal", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Shipping.ByTotal.Controllers" }, { "area", "" } })
+                            .Delete("RateDelete", "ShippingByTotal", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Shipping.ByTotal.Controllers" }, { "area", "" } })
+                    )
+                    .Columns(columns =>
+                    {
+                        columns.Bound(x => x.CountryName).Width(200).ReadOnly();
+                        columns.Bound(x => x.ShippingMethodName).Width(200).ReadOnly();
+                        columns.Bound(x => x.From).Width(100);
+                        columns.Bound(x => x.To).Width(100);
+                        columns.Bound(x => x.UsePercentage).Width(50)
+                            .ClientTemplate("<input type='checkbox' disabled='disabled' name='UsePercentage' <#=UsePercentage ? checked='checked' : ''#> />");
+                        columns.Bound(x => x.ShippingChargePercentage).Width(100);
+                        columns.Bound(x => x.ShippingChargeAmount).Width(100);
+                        columns.Command(commands =>
+                        {
+                            commands.Edit();
+                            commands.Delete();
+                        }).Width(180);
+                    })
+                    .Editable(x => x.Mode(GridEditMode.InLine))
+                    .EnableCustomBinding(true))
+        </td>
+    </tr>
+</table>
+<p>
+</p>
+@using (Html.BeginForm())
+{
+    <fieldset>
+        <legend><span style="font-weight: bold">@T("Plugins.Shipping.ByTotal.AddNewRecordTitle")</span></legend>
+        <table class="adminContent">
+            <tr>
+                <td class="adminTitle">
+                    @Html.NopLabelFor(model => model.AddCountryId):
+                </td>
+                <td class="adminData">
+                    @Html.DropDownListFor(model => model.AddCountryId, Model.AvailableCountries)
+                    @Html.ValidationMessageFor(model => model.AddCountryId)
+                </td>
+            </tr>
+            <tr>
+                <td class="adminTitle">
+                    @Html.NopLabelFor(model => model.AddShippingMethodId):
+                </td>
+                <td class="adminData">
+                    @Html.DropDownListFor(model => model.AddShippingMethodId, Model.AvailableShippingMethods)
+                    @Html.ValidationMessageFor(model => model.AddShippingMethodId)
+                </td>
+            </tr>
+            <tr>
+                <td class="adminTitle">
+                    @Html.NopLabelFor(model => model.AddFrom):
+                </td>
+                <td class="adminData">
+                    @Html.EditorFor(model => model.AddFrom) [@Model.PrimaryStoreCurrencyCode]
+                    @Html.ValidationMessageFor(model => model.AddFrom)
+                </td>
+            </tr>
+            <tr>
+                <td class="adminTitle">
+                    @Html.NopLabelFor(model => model.AddTo):
+                </td>
+                <td class="adminData">
+                    @Html.EditorFor(model => model.AddTo) [@Model.PrimaryStoreCurrencyCode]
+                    @Html.ValidationMessageFor(model => model.AddTo)
+                </td>
+            </tr>
+            <tr>
+                <td class="adminTitle">
+                    @Html.NopLabelFor(model => model.AddUsePercentage):
+                </td>
+                <td class="adminData">
+                    @Html.EditorFor(model => model.AddUsePercentage)
+                    @Html.ValidationMessageFor(model => model.AddUsePercentage)
+                </td>
+            </tr>
+            <tr>
+                <td class="adminTitle">
+                    @Html.NopLabelFor(model => model.AddShippingChargePercentage):
+                </td>
+                <td class="adminData">
+                    @Html.EditorFor(model => model.AddShippingChargePercentage)
+                    @Html.ValidationMessageFor(model => model.AddShippingChargePercentage)
+                </td>
+            </tr>
+            <tr>
+                <td class="adminTitle">
+                    @Html.NopLabelFor(model => model.AddShippingChargeAmount):
+                </td>
+                <td class="adminData">
+                    @Html.EditorFor(model => model.AddShippingChargeAmount) [@Model.PrimaryStoreCurrencyCode]
+                    @Html.ValidationMessageFor(model => model.AddShippingChargeAmount)
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="left">
+                    <button type="submit" name="addshippingbytotalrecord" value="addshippingbytotalrecord"
+                        class="t-button">@T("Admin.Common.AddNew")</button>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+    <br />
+    <hr />
+    <br />
+    <fieldset>
+        <legend><span style="font-weight: bold">@T("Plugins.Shipping.ByTotal.SettingsTitle")</span></legend>
+        <table class="adminContent">
+            <tr>
+                <td class="adminTitle">
+                    @Html.NopLabelFor(model => model.LimitMethodsToCreated):
+                </td>
+                <td class="adminData">
+                    @Html.EditorFor(model => model.LimitMethodsToCreated)
+                    @Html.ValidationMessageFor(model => model.LimitMethodsToCreated)
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="left">
+                    <button type="submit" name="savegeneralsettings" value="savegeneralsettings" class="t-button">@T("Admin.Common.Save")</button>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+}
+@* Open a form tag so the closing tag (in Presentation\Nop.Web\Administration\Views\Shipping\ConfigureProvider) isn't unmatched *@
+<form>
