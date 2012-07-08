@@ -41,7 +41,23 @@
 <p>
 </p>
 @using (Html.BeginForm())
-{
+{       
+    <script type="text/javascript">
+        $(function () {
+            $("#@Html.FieldIdFor(model => model.AddUsePercentage)").click(toggleAddUsePercentage);
+            toggleAddUsePercentage();
+        });
+        function toggleAddUsePercentage() {
+            if (getE('@Html.FieldIdFor(model => model.AddUsePercentage)').checked) {
+                $('#pnlAddShippingChargePercentage').show();
+                $('#pnlAddShippingChargeAmount').hide();
+            }
+            else {
+                $('#pnlAddShippingChargePercentage').hide();
+                $('#pnlAddShippingChargeAmount').show();
+            }
+        }
+    </script>
     <fieldset>
         <legend><span style="font-weight: 700">@T("Plugins.Shipping.ByTotal.AddNewRecordTitle")</span></legend>
         <table class="adminContent">
@@ -90,7 +106,7 @@
                     @Html.ValidationMessageFor(model => model.AddUsePercentage)
                 </td>
             </tr>
-            <tr>
+            <tr id="pnlAddShippingChargePercentage">
                 <td class="adminTitle">
                     @Html.NopLabelFor(model => model.AddShippingChargePercentage):
                 </td>
@@ -99,7 +115,7 @@
                     @Html.ValidationMessageFor(model => model.AddShippingChargePercentage)
                 </td>
             </tr>
-            <tr>
+            <tr id="pnlAddShippingChargeAmount">
                 <td class="adminTitle">
                     @Html.NopLabelFor(model => model.AddShippingChargeAmount):
                 </td>

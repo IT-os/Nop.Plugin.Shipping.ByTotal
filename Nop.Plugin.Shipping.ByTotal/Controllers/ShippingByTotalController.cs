@@ -75,7 +75,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             model.Records = _shippingByTotalService.GetAllShippingByTotalRecords()
                 .Select(x =>
                 {
-                    var m = new ShippingByTotalModel()
+                    var m = new ShippingByTotalModel
                     {
                         Id = x.Id,
                         ShippingMethodId = x.ShippingMethodId,
@@ -111,7 +111,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             var sbwModel = _shippingByTotalService.GetAllShippingByTotalRecords()
                 .Select(x =>
                 {
-                    var m = new ShippingByTotalModel()
+                    var m = new ShippingByTotalModel
                     {
                         Id = x.Id,
                         ShippingMethodId = x.ShippingMethodId,
@@ -185,15 +185,15 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                 return Configure();
             }
 
-            var shippingByTotalRecord = new ShippingByTotalRecord()
+            var shippingByTotalRecord = new ShippingByTotalRecord
             {
                 ShippingMethodId = model.AddShippingMethodId,
                 CountryId = model.AddCountryId,
                 From = model.AddFrom,
                 To = model.AddTo,
-                UsePercentage = model.AddUsePercentage,
-                ShippingChargeAmount = model.AddShippingChargeAmount,
-                ShippingChargePercentage = model.AddShippingChargePercentage
+                UsePercentage = model.AddUsePercentage,                
+                ShippingChargePercentage = (model.AddUsePercentage) ? model.AddShippingChargePercentage : 0,
+                ShippingChargeAmount = (model.AddUsePercentage) ? 0 : model.AddShippingChargeAmount
             };
             _shippingByTotalService.InsertShippingByTotalRecord(shippingByTotalRecord);
 

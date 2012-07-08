@@ -239,6 +239,26 @@ namespace Nop.Plugin.Shipping.ByTotal
         public override void Uninstall()
         {
             _objectContext.Uninstall();
+
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.From");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.From.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.SettingsTitle");
+
             base.Uninstall();
         }
 
