@@ -12,6 +12,13 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
     /// </summary>
     public partial class ShippingByTotalService : IShippingByTotalService
     {
+        #region Constants
+
+        private const string SHIPPINGBYTOTAL_ALL_KEY = "Nop.shippingbytotal.all";
+        private const string SHIPPINGBYTOTAL_PATTERN_KEY = "Nop.shippingbytotal.";
+
+        #endregion
+
         #region Fields
 
         private readonly IRepository<ShippingByTotalRecord> _sbtRepository;
@@ -43,13 +50,17 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <returns>ShippingByTotalRecord collection</returns>
         public virtual IList<ShippingByTotalRecord> GetAllShippingByTotalRecords()
         {
-            var query = from sbt in _sbtRepository.Table
-                        orderby sbt.CountryId, sbt.ShippingMethodId, sbt.From
-                        select sbt;
+            string key = SHIPPINGBYTOTAL_ALL_KEY;
+            return _cacheManager.Get(key, () =>
+            {
+                var query = from sbt in _sbtRepository.Table
+                            orderby sbt.CountryId, sbt.StateProvinceId, sbt.Zip, sbt.ShippingMethodId, sbt.From
+                            select sbt;
 
-            var records = query.ToList();
+                var records = query.ToList();
 
-            return records;
+                return records;
+            });
         }
 
         /// <summary>
@@ -75,34 +86,88 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <param name="shippingMethodId">shipping method identifier</param>
         /// <param name="countryId">country identifier</param>
         /// <param name="subtotal">subtotal</param>
+        /// <param name="stateProvinceId">state province identifier</param>
+        /// <param name="zip">Zip code</param>
         /// <returns>ShippingByTotalRecord</returns> 
-        public virtual ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int countryId, decimal subtotal)
+        public virtual ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int countryId, decimal subtotal, int stateProvinceId, string zip)
         {
-            var query = from sbt in _sbtRepository.Table
-                        where sbt.ShippingMethodId == shippingMethodId && subtotal >= sbt.From && subtotal <= sbt.To
-                        orderby sbt.CountryId, sbt.ShippingMethodId, sbt.From
-                        select sbt;
+            if (zip == null)
+            {
+                zip = string.Empty;
+            }
+            else
+            {
+                zip = zip.Trim();
+            }
 
-            var existingRecords = query.ToList();
+            //filter by shipping method and subtotal
+            var existingRates = GetAllShippingByTotalRecords()
+                .Where(sbt => sbt.ShippingMethodId == shippingMethodId && subtotal >= sbt.From && subtotal <= sbt.To)
+                .ToList();
 
             //filter by country
-            foreach (var sbt in existingRecords)
+            var matchedByCountry = new List<ShippingByTotalRecord>();
+            foreach (var sbt in existingRates)
             {
                 if (countryId == sbt.CountryId)
                 {
-                    return sbt;
+                    matchedByCountry.Add(sbt);
                 }
             }
-
-            foreach (var sbt in existingRecords)
+            if (matchedByCountry.Count == 0)
             {
-                if (sbt.CountryId == 0)
+                foreach (var sbt in existingRates)
                 {
-                    return sbt;
+                    if (sbt.CountryId == 0)
+                    {
+                        matchedByCountry.Add(sbt);
+                    }
                 }
             }
 
-            return null;
+            //filter by state/province
+            var matchedByStateProvince = new List<ShippingByTotalRecord>();
+            foreach (var sbt in matchedByCountry)
+            {
+                if (stateProvinceId == sbt.StateProvinceId)
+                {
+                    matchedByStateProvince.Add(sbt);
+                }
+            }
+            if (matchedByStateProvince.Count == 0)
+            {
+                foreach (var sbw in matchedByCountry)
+                {
+                    if (sbw.StateProvinceId == 0)
+                    {
+                        matchedByStateProvince.Add(sbw);
+                    }
+                }
+            }
+
+            //filter by zip
+            var matchedByZip = new List<ShippingByTotalRecord>();
+            foreach (var sbt in matchedByStateProvince)
+            {
+                if ((String.IsNullOrEmpty(zip) && String.IsNullOrEmpty(sbt.Zip)) ||
+                    (zip.Equals(sbt.Zip, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    matchedByZip.Add(sbt);
+                }
+            }
+
+            if (matchedByZip.Count == 0)
+            {
+                foreach (var taxRate in matchedByStateProvince)
+                {
+                    if (String.IsNullOrWhiteSpace(taxRate.Zip))
+                    {
+                        matchedByZip.Add(taxRate);
+                    }
+                }
+            }
+
+            return matchedByZip.FirstOrDefault();
         }
 
         /// <summary>
@@ -117,6 +182,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             }
 
             _sbtRepository.Delete(shippingByTotalRecord);
+
+            _cacheManager.RemoveByPattern(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         /// <summary>
@@ -131,6 +198,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             }
 
             _sbtRepository.Insert(shippingByTotalRecord);
+
+            _cacheManager.RemoveByPattern(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         /// <summary>
@@ -145,6 +214,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             }
 
             _sbtRepository.Update(shippingByTotalRecord);
+
+            _cacheManager.RemoveByPattern(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         #endregion

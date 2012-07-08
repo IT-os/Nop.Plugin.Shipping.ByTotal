@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Web.Mvc;
@@ -22,19 +23,25 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         private readonly IShippingByTotalService _shippingByTotalService;
         private readonly ShippingByTotalSettings _shippingByTotalSettings;
         private readonly ICountryService _countryService;
+        private readonly IStateProvinceService _stateProvinceService;
         private readonly ICurrencyService _currencyService;
         private readonly CurrencySettings _currencySettings;
 
         public ShippingByTotalController(IShippingService shippingService,
-            ISettingService settingService, IShippingByTotalService shippingByTotalService,
-            ShippingByTotalSettings shippingByTotalSettings, ICountryService countryService,
-            ICurrencyService currencyService, CurrencySettings currencySettings)
+            ISettingService settingService, 
+            IShippingByTotalService shippingByTotalService,
+            ShippingByTotalSettings shippingByTotalSettings, 
+            ICountryService countryService,
+            IStateProvinceService stateProvinceService,
+            ICurrencyService currencyService, 
+            CurrencySettings currencySettings)
         {
             this._shippingService = shippingService;
             this._settingService = settingService;
             this._shippingByTotalService = shippingByTotalService;
             this._shippingByTotalSettings = shippingByTotalSettings;
             this._countryService = countryService;
+            this._stateProvinceService = stateProvinceService;
             this._currencyService = currencyService;
             this._currencySettings = currencySettings;
         }
@@ -69,6 +76,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             {
                 model.AvailableCountries.Add(new SelectListItem() { Text = c.Name, Value = c.Id.ToString() });
             }
+
+            model.AvailableStates.Add(new SelectListItem() { Text = "*", Value = "0" });
             model.LimitMethodsToCreated = _shippingByTotalSettings.LimitMethodsToCreated;
             model.PrimaryStoreCurrencyCode = _currencyService.GetCurrencyById(_currencySettings.PrimaryStoreCurrencyId).CurrencyCode;
 
@@ -80,23 +89,22 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                         Id = x.Id,
                         ShippingMethodId = x.ShippingMethodId,
                         CountryId = x.CountryId,
+                        StateProvinceId = x.StateProvinceId,
+                        Zip = x.Zip,
                         From = x.From,
                         To = x.To,
                         UsePercentage = x.UsePercentage,
                         ShippingChargePercentage = x.ShippingChargePercentage,
                         ShippingChargeAmount = x.ShippingChargeAmount,
                     };
-                    var shippingMethodId = _shippingService.GetShippingMethodById(x.ShippingMethodId);
-                    m.ShippingMethodName = (shippingMethodId != null) ? shippingMethodId.Name : "Unavailable";
-                    if (x.CountryId > 0)
-                    {
-                        var c = _countryService.GetCountryById(x.CountryId);
-                        m.CountryName = (c != null) ? c.Name : "Unavailable";
-                    }
-                    else
-                    {
-                        m.CountryName = "*";
-                    }
+                    var shippingMethod = _shippingService.GetShippingMethodById(x.ShippingMethodId);
+                    m.ShippingMethodName = (shippingMethod != null) ? shippingMethod.Name : "Unavailable";
+                    
+                    var c = _countryService.GetCountryById(x.CountryId);
+                    m.CountryName = (c != null) ? c.Name : "*";
+                    var s = _stateProvinceService.GetStateProvinceById(x.StateProvinceId);
+                    m.StateProvinceName = (s != null) ? s.Name : "*";
+                    m.Zip = (!String.IsNullOrEmpty(x.Zip)) ? x.Zip : "*";
 
                     return m;
                 })
@@ -122,17 +130,15 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                         ShippingChargePercentage = x.ShippingChargePercentage,
                         ShippingChargeAmount = x.ShippingChargeAmount,
                     };
-                    var shippingMethodId = _shippingService.GetShippingMethodById(x.ShippingMethodId);
-                    m.ShippingMethodName = (shippingMethodId != null) ? shippingMethodId.Name : "Unavailable";
-                    if (x.CountryId > 0)
-                    {
-                        var c = _countryService.GetCountryById(x.CountryId);
-                        m.CountryName = (c != null) ? c.Name : "Unavailable";
-                    }
-                    else
-                    {
-                        m.CountryName = "*";
-                    }
+                    var shippingMethod = _shippingService.GetShippingMethodById(x.ShippingMethodId);
+                    m.ShippingMethodName = (shippingMethod != null) ? shippingMethod.Name : "Unavailable";
+                    
+                    var c = _countryService.GetCountryById(x.CountryId);
+                    m.CountryName = (c != null) ? c.Name : "*";
+                    var s = _stateProvinceService.GetStateProvinceById(x.StateProvinceId);
+                    m.StateProvinceName = (s != null) ? s.Name : "*";
+                    m.Zip = (!String.IsNullOrEmpty(x.Zip)) ? x.Zip : "*";
+                    
                     return m;
                 })
                 .ToList();
@@ -157,6 +163,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             }
 
             var shippingByTotalRecord = _shippingByTotalService.GetShippingByTotalRecordById(model.Id);
+            shippingByTotalRecord.Zip = model.Zip == "*" ? null : model.Zip;
             shippingByTotalRecord.From = model.From;
             shippingByTotalRecord.To = model.To;
             shippingByTotalRecord.UsePercentage = model.UsePercentage;
@@ -171,24 +178,22 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         public ActionResult RateDelete(int id, GridCommand command)
         {
             var shippingByTotalRecord = _shippingByTotalService.GetShippingByTotalRecordById(id);
-            _shippingByTotalService.DeleteShippingByTotalRecord(shippingByTotalRecord);
-
+            if (shippingByTotalRecord != null)
+            {
+                _shippingByTotalService.DeleteShippingByTotalRecord(shippingByTotalRecord);
+            }
             return RatesList(command);
         }
 
-        [HttpPost, ActionName("Configure")]
-        [FormValueRequired("addshippingbytotalrecord")]
-        public ActionResult AddShippingByTotalRecord(ShippingByTotalListModel model)
+        [HttpPost]
+        public ActionResult AddShippingRate(ShippingByTotalListModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return Configure();
-            }
-
             var shippingByTotalRecord = new ShippingByTotalRecord
             {
                 ShippingMethodId = model.AddShippingMethodId,
                 CountryId = model.AddCountryId,
+                StateProvinceId = model.AddStateProvinceId,
+                Zip = model.AddZip,
                 From = model.AddFrom,
                 To = model.AddTo,
                 UsePercentage = model.AddUsePercentage,                
@@ -197,18 +202,17 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             };
             _shippingByTotalService.InsertShippingByTotalRecord(shippingByTotalRecord);
 
-            return Configure();
+            return Json(new { Result = true });
         }
 
-        [HttpPost, ActionName("Configure")]
-        [FormValueRequired("savegeneralsettings")]
+        [HttpPost]
         public ActionResult SaveGeneralSettings(ShippingByTotalListModel model)
         {
             //save settings
             _shippingByTotalSettings.LimitMethodsToCreated = model.LimitMethodsToCreated;
             _settingService.SaveSetting(_shippingByTotalSettings);
 
-            return Configure();
+            return Json(new { Result = true });
         }
     }
 }

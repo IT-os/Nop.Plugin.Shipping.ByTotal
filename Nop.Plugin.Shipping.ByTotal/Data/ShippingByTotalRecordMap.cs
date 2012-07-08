@@ -9,6 +9,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         {
             this.ToTable("ShippingByTotal");
             this.HasKey(x => x.Id);
+
+            this.Property(x => x.Zip).HasMaxLength(400);
         }
     }
 }

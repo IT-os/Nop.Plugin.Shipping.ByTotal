@@ -10,12 +10,19 @@ namespace Nop.Plugin.Shipping.ByTotal.Models
         public ShippingByTotalListModel()
         {
             AvailableCountries = new List<SelectListItem>();
+            AvailableStates = new List<SelectListItem>();
             AvailableShippingMethods = new List<SelectListItem>();
             Records = new List<ShippingByTotalModel>();
         }
 
         [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Country")]
         public int AddCountryId { get; set; }
+
+        [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.StateProvince")]
+        public int AddStateProvinceId { get; set; }
+
+        [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Zip")]
+        public string AddZip { get; set; }
 
         [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.ShippingMethod")]
         public int AddShippingMethodId { get; set; }
@@ -41,6 +48,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Models
         public string PrimaryStoreCurrencyCode { get; set; }
 
         public IList<SelectListItem> AvailableCountries { get; set; }
+        public IList<SelectListItem> AvailableStates { get; set; }
         public IList<SelectListItem> AvailableShippingMethods { get; set; }
         public IList<ShippingByTotalModel> Records { get; set; }
     }
