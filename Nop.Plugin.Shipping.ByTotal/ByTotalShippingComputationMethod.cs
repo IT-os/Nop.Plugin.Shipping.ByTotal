@@ -256,7 +256,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             var localeStringResources = new List<LocaleStringResource>()
                 {
                     new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.Country", ResourceValue = "Country" },    
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.Country.Hint", ResourceValue = "If an asterisk is selected, then this tax rate will apply to all customers, regardless of the country." },
+                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.Country.Hint", ResourceValue = "If an asterisk is selected, then this shipping rate will apply to all customers, regardless of the country." },
                     new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.ShippingMethod", ResourceValue = "Shipping method" },
                     new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.ShippingMethod.Hint", ResourceValue = "The shipping method." },
                     new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.From", ResourceValue = "Order total From" },
@@ -272,7 +272,7 @@ namespace Nop.Plugin.Shipping.ByTotal
                     new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated", ResourceValue = "Limit shipping methods to configured ones" },
                     new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated.Hint", ResourceValue = "If you check this option, then your customers will be limited to shipping options configured here. Otherwise, they'll be able to choose any existing shipping options even if they're not configured here (zero shipping fee in this case)." },
                     new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.AddNewRecordTitle", ResourceValue = "Add new 'Shipping By Total' record" },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.SettingsTitle", ResourceValue = "Shipping By Total Settings" }                    
+                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.SettingsTitle", ResourceValue = "Shipping By Total Settings" }
                 };
 
             InstallPluginLocaleStringResources(localeStringResources, allLanguages);

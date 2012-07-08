@@ -1,4 +1,6 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using Nop.Core;
 using Nop.Data;
@@ -54,6 +56,11 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
             var dbScript = "DROP TABLE ShippingByTotal";
             Database.ExecuteSqlCommand(dbScript);
             SaveChanges();
+        }
+
+        public IList<TEntity> ExecuteStoredProcedureList<TEntity>(string commandText, params object[] parameters) where TEntity : BaseEntity, new()
+        {
+            throw new NotImplementedException();
         }
     }
 }
