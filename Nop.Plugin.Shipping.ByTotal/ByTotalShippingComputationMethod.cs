@@ -8,6 +8,7 @@ using Nop.Services.Catalog;
 using Nop.Services.Localization;
 using Nop.Services.Logging;
 using Nop.Services.Shipping;
+using Nop.Services.Shipping.Tracking;
 
 namespace Nop.Plugin.Shipping.ByTotal
 {
@@ -187,6 +188,17 @@ namespace Nop.Plugin.Shipping.ByTotal
         public decimal? GetFixedRate(GetShippingOptionRequest getShippingOptionRequest)
         {
             return null;
+        }
+
+        /// <summary>
+        /// Gets a shipment tracker
+        /// </summary>
+        public IShipmentTracker ShipmentTracker
+        {
+            get
+            {
+                return null;
+            }
         }
 
         /// <summary>
