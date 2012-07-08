@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Web.Routing;
-using Nop.Core.Domain.Localization;
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Plugins;
 using Nop.Plugin.Shipping.ByTotal.Data;
@@ -22,8 +20,6 @@ namespace Nop.Plugin.Shipping.ByTotal
         private readonly ShippingByTotalSettings _shippingByTotalSettings;
         private readonly ShippingByTotalObjectContext _objectContext;
         private readonly IPriceCalculationService _priceCalculationService;
-        private readonly ILocalizationService _localizationService;
-        private readonly ILanguageService _languageService;
         private readonly ILogger _logger;
 
         #endregion
@@ -38,16 +34,12 @@ namespace Nop.Plugin.Shipping.ByTotal
         /// <param name="shippingByTotalSettings">ShippingByTotal settings</param>
         /// <param name="objectContext">ShippingByTotal object context</param>
         /// <param name="priceCalculationService">PriceCalculation service</param>
-        /// <param name="localizationService">Localization service</param>
-        /// <param name="languageService">Language service</param>
         /// <param name="logger">Logger</param>
         public ByTotalShippingComputationMethod(IShippingService shippingService,
             IShippingByTotalService shippingByTotalService,
             ShippingByTotalSettings shippingByTotalSettings,
             ShippingByTotalObjectContext objectContext,
             IPriceCalculationService priceCalculationService,
-            ILocalizationService localizationService,
-            ILanguageService languageService,
             ILogger logger)
         {
             this._shippingService = shippingService;
@@ -55,8 +47,6 @@ namespace Nop.Plugin.Shipping.ByTotal
             this._shippingByTotalSettings = shippingByTotalSettings;
             this._objectContext = objectContext;
             this._priceCalculationService = priceCalculationService;
-            this._localizationService = localizationService;
-            this._languageService = languageService;
             this._logger = logger;
         }
 
@@ -129,38 +119,6 @@ namespace Nop.Plugin.Shipping.ByTotal
             }
 
             return shippingTotal;
-        }
-
-        /// <summary>
-        /// Inserts or updates language resources for the plugin
-        /// </summary>
-        /// <param name="localeStringResources">collection of resources used by the plugin</param>
-        /// <param name="languages">collection of languages for which to install the resources</param>
-        private void InstallPluginLocaleStringResources(IList<LocaleStringResource> localeStringResources, IEnumerable<Language> languages)
-        {
-            foreach (var language in languages)
-            {
-                var languageId = language.Id;
-
-                foreach (var lsr in localeStringResources)
-                {
-                    lsr.LanguageId = languageId;
-
-                    var resource = _localizationService.GetLocaleStringResourceByName(lsr.ResourceName, languageId, false);
-
-                    if (resource != null)
-                    {
-                        resource.ResourceName = lsr.ResourceName;
-                        resource.ResourceValue = lsr.ResourceValue;
-
-                        _localizationService.UpdateLocaleStringResource(resource);
-                    }
-                    else
-                    {
-                        _localizationService.InsertLocaleStringResource(lsr);
-                    }
-                }
-            }
         }
 
         #endregion
@@ -250,32 +208,28 @@ namespace Nop.Plugin.Shipping.ByTotal
         public override void Install()
         {
             _objectContext.Install();
+
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country", "Country");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country.Hint", "If an asterisk is selected, then this shipping rate will apply to all customers, regardless of the country.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod", "Shipping method");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod.Hint", "The shipping method.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.From", "Order total From");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.From.Hint", "Order total from.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To", "Order total To");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To.Hint", "Order total to.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage", "Use percentage");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage.Hint", "Check to use 'charge percentage' value.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage", "Charge percentage (of subtotal)");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage.Hint", "Charge percentage (of subtotal).");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount", "Charge amount");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount.Hint", "Charge amount.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated", "Limit shipping methods to configured ones");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated.Hint", "If you check this option, then your customers will be limited to shipping options configured here. Otherwise, they'll be able to choose any existing shipping options even if they're not configured here (zero shipping fee in this case).");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle", "Add new 'Shipping By Total' record");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.SettingsTitle", "Shipping By Total Settings");
+
             base.Install();
 
-            var allLanguages = _languageService.GetAllLanguages();
-            var localeStringResources = new List<LocaleStringResource>()
-                {
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.Country", ResourceValue = "Country" },    
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.Country.Hint", ResourceValue = "If an asterisk is selected, then this shipping rate will apply to all customers, regardless of the country." },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.ShippingMethod", ResourceValue = "Shipping method" },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.ShippingMethod.Hint", ResourceValue = "The shipping method." },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.From", ResourceValue = "Order total From" },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.From.Hint", ResourceValue = "Order total from." },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.To", ResourceValue = "Order total To" },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.To.Hint", ResourceValue = "Order total to." },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.UsePercentage", ResourceValue = "Use percentage" },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.UsePercentage.Hint", ResourceValue = "Check to use 'charge percentage' value." },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage", ResourceValue = "Charge percentage (of subtotal)" },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage.Hint", ResourceValue = "Charge percentage (of subtotal)." },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount", ResourceValue = "Charge amount" },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount.Hint", ResourceValue = "Charge amount." },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated", ResourceValue = "Limit shipping methods to configured ones" },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated.Hint", ResourceValue = "If you check this option, then your customers will be limited to shipping options configured here. Otherwise, they'll be able to choose any existing shipping options even if they're not configured here (zero shipping fee in this case)." },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.AddNewRecordTitle", ResourceValue = "Add new 'Shipping By Total' record" },
-                    new LocaleStringResource { ResourceName = "Plugins.Shipping.ByTotal.SettingsTitle", ResourceValue = "Shipping By Total Settings" }
-                };
-
-            InstallPluginLocaleStringResources(localeStringResources, allLanguages);
             _logger.Information(string.Format("Plugin installed: SystemName: {0}, Version: {1}, Description: '{2}'", PluginDescriptor.SystemName, PluginDescriptor.Version, PluginDescriptor.FriendlyName));
         }
 

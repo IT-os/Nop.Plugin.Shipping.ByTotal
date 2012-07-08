@@ -5,9 +5,6 @@
 @using Nop.Plugin.Shipping.ByTotal.Models;
 @using Nop.Web.Framework;
 @using Telerik.Web.Mvc.UI;
-@* Need the following to close the form tag opened in Presentation\Nop.Web\Administration\Views\Shipping\ConfigureProvider
-   -as this configure view uses forms and nested forms cause display amd grid refresh errors in IE *@
-</form>
 <table class="adminContent">
     <tr>
         <td>
@@ -46,7 +43,7 @@
 @using (Html.BeginForm())
 {
     <fieldset>
-        <legend><span style="font-weight: bold">@T("Plugins.Shipping.ByTotal.AddNewRecordTitle")</span></legend>
+        <legend><span style="font-weight: 700">@T("Plugins.Shipping.ByTotal.AddNewRecordTitle")</span></legend>
         <table class="adminContent">
             <tr>
                 <td class="adminTitle">
@@ -123,7 +120,7 @@
     <hr />
     <br />
     <fieldset>
-        <legend><span style="font-weight: bold">@T("Plugins.Shipping.ByTotal.SettingsTitle")</span></legend>
+        <legend><span style="font-weight: 700">@T("Plugins.Shipping.ByTotal.SettingsTitle")</span></legend>
         <table class="adminContent">
             <tr>
                 <td class="adminTitle">
@@ -142,5 +139,3 @@
         </table>
     </fieldset>
 }
-@* Open a form tag so the closing tag (in Presentation\Nop.Web\Administration\Views\Shipping\ConfigureProvider) isn't unmatched *@
-<form>
