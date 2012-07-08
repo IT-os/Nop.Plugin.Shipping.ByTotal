@@ -5,6 +5,7 @@ using Nop.Core.Plugins;
 using Nop.Plugin.Shipping.ByTotal.Data;
 using Nop.Plugin.Shipping.ByTotal.Services;
 using Nop.Services.Catalog;
+using Nop.Services.Configuration;
 using Nop.Services.Localization;
 using Nop.Services.Logging;
 using Nop.Services.Shipping;
@@ -22,6 +23,7 @@ namespace Nop.Plugin.Shipping.ByTotal
         private readonly ShippingByTotalObjectContext _objectContext;
         private readonly IPriceCalculationService _priceCalculationService;
         private readonly ILogger _logger;
+        private readonly ISettingService _settingService;
 
         #endregion
 
@@ -35,13 +37,15 @@ namespace Nop.Plugin.Shipping.ByTotal
         /// <param name="shippingByTotalSettings">ShippingByTotal settings</param>
         /// <param name="objectContext">ShippingByTotal object context</param>
         /// <param name="priceCalculationService">PriceCalculation service</param>
+        /// <param name="settingService">Settings service</param>
         /// <param name="logger">Logger</param>
         public ByTotalShippingComputationMethod(IShippingService shippingService,
             IShippingByTotalService shippingByTotalService,
             ShippingByTotalSettings shippingByTotalSettings,
             ShippingByTotalObjectContext objectContext,
             IPriceCalculationService priceCalculationService,
-            ILogger logger)
+            ILogger logger,
+            ISettingService settingService)
         {
             this._shippingService = shippingService;
             this._shippingByTotalService = shippingByTotalService;
@@ -49,6 +53,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             this._objectContext = objectContext;
             this._priceCalculationService = priceCalculationService;
             this._logger = logger;
+            this._settingService = settingService;
         }
 
         #endregion
@@ -218,7 +223,13 @@ namespace Nop.Plugin.Shipping.ByTotal
         /// Install the plugin
         /// </summary>
         public override void Install()
-        {
+        {            
+            var settings = new ShippingByTotalSettings()
+            {                
+                LimitMethodsToCreated = false
+            };
+            _settingService.SaveSetting(settings);
+
             _objectContext.Install();
 
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country", "Country");
@@ -250,6 +261,8 @@ namespace Nop.Plugin.Shipping.ByTotal
         /// </summary>
         public override void Uninstall()
         {
+            _settingService.DeleteSetting<ShippingByTotalSettings>();
+
             _objectContext.Uninstall();
 
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country");
