@@ -71,6 +71,17 @@ namespace Nop.Plugin.Shipping.ByTotal
             }
         }
 
+        /// <summary>
+        /// Gets a shipment tracker
+        /// </summary>
+        public IShipmentTracker ShipmentTracker
+        {
+            get
+            {
+                return null;
+            }
+        }
+
         #endregion
 
         #region Utilities
@@ -178,8 +189,8 @@ namespace Nop.Plugin.Shipping.ByTotal
                 if (rate.HasValue)
                 {
                     var shippingOption = new ShippingOption();
-                    shippingOption.Name = shippingMethod.Name;
-                    shippingOption.Description = shippingMethod.Description;
+                    shippingOption.Name = shippingMethod.GetLocalized(x => x.Name);
+                    shippingOption.Description = shippingMethod.GetLocalized(x => x.Description);
                     shippingOption.Rate = rate.Value;
                     response.ShippingOptions.Add(shippingOption);
                 }
@@ -199,23 +210,12 @@ namespace Nop.Plugin.Shipping.ByTotal
         }
 
         /// <summary>
-        /// Gets a shipment tracker
-        /// </summary>
-        public IShipmentTracker ShipmentTracker
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Gets a route for provider configuration
         /// </summary>
         /// <param name="actionName">Action name</param>
         /// <param name="controllerName">Controller name</param>
         /// <param name="routeValues">Route values</param>
-        public void GetConfigurationRoute(out string actionName, out string controllerName, out System.Web.Routing.RouteValueDictionary routeValues)
+        public void GetConfigurationRoute(out string actionName, out string controllerName, out RouteValueDictionary routeValues)
         {
             actionName = "Configure";
             controllerName = "ShippingByTotal";
@@ -226,9 +226,9 @@ namespace Nop.Plugin.Shipping.ByTotal
         /// Install the plugin
         /// </summary>
         public override void Install()
-        {            
-            var settings = new ShippingByTotalSettings()
-            {                
+        {
+            var settings = new ShippingByTotalSettings
+            {
                 LimitMethodsToCreated = false
             };
             _settingService.SaveSetting(settings);
