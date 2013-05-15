@@ -9,6 +9,8 @@ using Nop.Plugin.Shipping.ByTotal.Models;
 using Nop.Plugin.Shipping.ByTotal.Services;
 using Nop.Services.Configuration;
 using Nop.Services.Directory;
+using Nop.Services.Localization;
+using Nop.Services.Security;
 using Nop.Services.Shipping;
 using Nop.Web.Framework.Controllers;
 using Telerik.Web.Mvc;
@@ -26,15 +28,19 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         private readonly IStateProvinceService _stateProvinceService;
         private readonly ICurrencyService _currencyService;
         private readonly CurrencySettings _currencySettings;
+        private readonly IPermissionService _permissionService;
+        private readonly ILocalizationService _localizationService;
 
         public ShippingByTotalController(IShippingService shippingService,
-            ISettingService settingService, 
+            ISettingService settingService,
             IShippingByTotalService shippingByTotalService,
-            ShippingByTotalSettings shippingByTotalSettings, 
+            ShippingByTotalSettings shippingByTotalSettings,
             ICountryService countryService,
             IStateProvinceService stateProvinceService,
-            ICurrencyService currencyService, 
-            CurrencySettings currencySettings)
+            ICurrencyService currencyService,
+            CurrencySettings currencySettings,
+            IPermissionService permissionService,
+            ILocalizationService localizationService)
         {
             this._shippingService = shippingService;
             this._settingService = settingService;
@@ -44,6 +50,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             this._stateProvinceService = stateProvinceService;
             this._currencyService = currencyService;
             this._currencySettings = currencySettings;
+            this._permissionService = permissionService;
+            this._localizationService = localizationService;
         }
 
         protected override void Initialize(System.Web.Routing.RequestContext requestContext)
@@ -56,6 +64,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             base.Initialize(requestContext);
         }
 
+        [ChildActionOnly]
         public ActionResult Configure()
         {
             var shippingMethods = _shippingService.GetAllShippingMethods();
@@ -99,7 +108,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                     };
                     var shippingMethod = _shippingService.GetShippingMethodById(x.ShippingMethodId);
                     m.ShippingMethodName = (shippingMethod != null) ? shippingMethod.Name : "Unavailable";
-                    
+
                     var c = _countryService.GetCountryById(x.CountryId);
                     m.CountryName = (c != null) ? c.Name : "*";
                     var s = _stateProvinceService.GetStateProvinceById(x.StateProvinceId);
@@ -116,6 +125,11 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         [HttpPost, GridAction(EnableCustomBinding = true)]
         public ActionResult RatesList(GridCommand command)
         {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
+            {
+                return Content(_localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied"));
+            }
+
             var sbwModel = _shippingByTotalService.GetAllShippingByTotalRecords()
                 .Select(x =>
                 {
@@ -132,13 +146,13 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                     };
                     var shippingMethod = _shippingService.GetShippingMethodById(x.ShippingMethodId);
                     m.ShippingMethodName = (shippingMethod != null) ? shippingMethod.Name : "Unavailable";
-                    
+
                     var c = _countryService.GetCountryById(x.CountryId);
                     m.CountryName = (c != null) ? c.Name : "*";
                     var s = _stateProvinceService.GetStateProvinceById(x.StateProvinceId);
                     m.StateProvinceName = (s != null) ? s.Name : "*";
                     m.Zip = (!String.IsNullOrEmpty(x.Zip)) ? x.Zip : "*";
-                    
+
                     return m;
                 })
                 .ToList();
@@ -157,6 +171,11 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         [GridAction(EnableCustomBinding = true)]
         public ActionResult RateUpdate(ShippingByTotalModel model, GridCommand command)
         {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
+            {
+                return Content(_localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied"));
+            }
+
             if (!ModelState.IsValid)
             {
                 return new JsonResult { Data = "error" };
@@ -177,6 +196,11 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         [GridAction(EnableCustomBinding = true)]
         public ActionResult RateDelete(int id, GridCommand command)
         {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
+            {
+                return Content(_localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied"));
+            }
+
             var shippingByTotalRecord = _shippingByTotalService.GetShippingByTotalRecordById(id);
             if (shippingByTotalRecord != null)
             {
@@ -188,6 +212,11 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         [HttpPost]
         public ActionResult AddShippingRate(ShippingByTotalListModel model)
         {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
+            {
+                return Json(new { Result = false, Message = _localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied") });
+            }
+
             var shippingByTotalRecord = new ShippingByTotalRecord
             {
                 ShippingMethodId = model.AddShippingMethodId,
@@ -196,7 +225,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                 Zip = model.AddZip,
                 From = model.AddFrom,
                 To = model.AddTo,
-                UsePercentage = model.AddUsePercentage,                
+                UsePercentage = model.AddUsePercentage,
                 ShippingChargePercentage = (model.AddUsePercentage) ? model.AddShippingChargePercentage : 0,
                 ShippingChargeAmount = (model.AddUsePercentage) ? 0 : model.AddShippingChargeAmount
             };
@@ -208,11 +237,16 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         [HttpPost]
         public ActionResult SaveGeneralSettings(ShippingByTotalListModel model)
         {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
+            {
+                return Json(new { Result = false, Message = _localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied") });
+            }
+
             //save settings
             _shippingByTotalSettings.LimitMethodsToCreated = model.LimitMethodsToCreated;
             _settingService.SaveSetting(_shippingByTotalSettings);
 
-            return Json(new { Result = true });
+            return Json(new { Result = true, Message = _localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.Saved") });
         }
     }
 }

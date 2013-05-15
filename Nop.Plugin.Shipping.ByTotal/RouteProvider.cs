@@ -8,12 +8,6 @@ namespace Nop.Plugin.Shipping.ByTotal
     {
         public void RegisterRoutes(RouteCollection routes)
         {
-            routes.MapRoute("Plugin.Shipping.ByTotal.Configure",
-                 "Plugins/ShippingByTotal/Configure",
-                 new { controller = "ShippingByTotal", action = "Configure" },
-                 new[] { "Nop.Plugin.Shipping.ByTotal.Controllers" }
-            );
-
             routes.MapRoute("Plugin.Shipping.ByTotal.AddShippingRate",
                  "Plugins/ShippingByTotal/AddShippingRate",
                  new { controller = "ShippingByTotal", action = "AddShippingRate" },

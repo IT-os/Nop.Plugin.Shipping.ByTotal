@@ -257,6 +257,10 @@ namespace Nop.Plugin.Shipping.ByTotal
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated.Hint", "If you check this option, then your customers will be limited to shipping options configured here. Otherwise, they'll be able to choose any existing shipping options even if they're not configured here (zero shipping fee in this case).");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle", "Add new 'Shipping By Total' record");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.SettingsTitle", "Shipping By Total Settings");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied", "Access denied");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.Saved", "Saved");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed", "Failed to add record.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.StatesFailed", "Failed to retrieve states.");
 
             base.Install();
 
@@ -294,6 +298,10 @@ namespace Nop.Plugin.Shipping.ByTotal
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated.Hint");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.SettingsTitle");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.Saved");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.StatesFailed");
 
             base.Uninstall();
         }

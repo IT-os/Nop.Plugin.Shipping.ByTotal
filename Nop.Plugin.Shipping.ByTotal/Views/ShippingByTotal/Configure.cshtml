@@ -17,6 +17,7 @@
                             .Update("RateUpdate", "ShippingByTotal", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Shipping.ByTotal.Controllers" }, { "area", "" } })
                             .Delete("RateDelete", "ShippingByTotal", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Shipping.ByTotal.Controllers" }, { "area", "" } })
                     )
+                    .ClientEvents(events => events.OnError("Grid_onError"))
                     .Columns(columns =>
                     {
                         columns.Bound(x => x.CountryName).ReadOnly();
@@ -43,27 +44,38 @@
 <p>
 </p>
 <script type="text/javascript">
-     $(function() {
-            $("#@Html.FieldIdFor(model => model.AddCountryId)").change(function() {
-                var selectedItem = $(this).val();
-                var ddlStates = $("#@Html.FieldIdFor(model => model.AddStateProvinceId)")
-                $.ajax({
-                    cache:false,
-                    type: "GET",
-                    url: "@(Url.Action("GetStatesByCountryId", "Country", new RouteValueDictionary() { { "area", "Admin" } }))",
-                    data: { "countryId": selectedItem, "addAsterisk": "true" },
-                    success: function (data) {
-                        ddlStates.html('');
-                        $.each(data, function(id, option) {
-                            ddlStates.append($('<option></option>').val(option.id).html(option.name));
-                        });
-                    },
-                    error:function (xhr, ajaxOptions, thrownError){
-                        alert('Failed to retrieve states.')
-                    }  
-                });
+    function Grid_onError(e) {
+        clearGrid(e.XMLHttpRequest.responseText);
+        alert(e.XMLHttpRequest.responseText);
+        e.preventDefault();
+    }
+    function clearGrid(message) {
+        var grid = $('#shipping-bytotal-grid').data("tGrid");
+        grid.total = 0;
+        grid.dataBind(Array());
+        $('#shipping-bytotal-grid').find('.t-no-data td').text(message);
+    }
+    $(function () {
+        $("#@Html.FieldIdFor(model => model.AddCountryId)").change(function () {
+            var selectedItem = $(this).val();
+            var ddlStates = $("#@Html.FieldIdFor(model => model.AddStateProvinceId)")
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: "@(Url.Action("GetStatesByCountryId", "Country", new RouteValueDictionary() { { "area", "Admin" } }))",
+                data: { "countryId": selectedItem, "addAsterisk": "true" },
+                success: function (data) {
+                    ddlStates.html('');
+                    $.each(data, function (id, option) {
+                        ddlStates.append($('<option></option>').val(option.id).html(option.name));
+                    });
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert('@T("Plugins.Shipping.ByTotal.ManageShippingSettings.StatesFailed").Text');
+                 }
             });
         });
+    });
 </script>
 @using (Html.BeginForm())
 {       
@@ -91,11 +103,16 @@
                     data: $(this.form).serialize(),
                     dataType: 'json',
                     success: function (data) {
-                        var shippingByTotalGrid = $("#shipping-bytotal-grid");
-                        shippingByTotalGrid.data('tGrid').ajaxRequest();
+                        if (data.Result == true) {
+                            $("#shipping-bytotal-grid").data('tGrid').ajaxRequest();
+                        }
+                        else {
+                            clearGrid(data.Message);
+                            alert(data.Message);
+                        }
                     },
                     error: function (xhr, ajaxOptions, thrownError) {
-                        alert('Failed to add record.');
+                        alert('@T("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed").Text');
                     }
                 });
                 return false;
@@ -111,16 +128,18 @@
                     data: $(this.form).serialize(),
                     dataType: 'json',
                     success: function (data) {
-                        alert('Saved');
+                        if (data.Result == false) {
+                            clearGrid(data.Message);
+                        }
+                        alert(data.Message);
                     },
                     error: function (xhr, ajaxOptions, thrownError) {
-                        alert('Failed to add record.');
+                        alert('@T("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed").Text');
                     }
                 });
                 return false;
             });
         });
-
     </script>
     <fieldset>
         <legend><span style="font-weight: 700">@T("Plugins.Shipping.ByTotal.AddNewRecordTitle")</span></legend>
