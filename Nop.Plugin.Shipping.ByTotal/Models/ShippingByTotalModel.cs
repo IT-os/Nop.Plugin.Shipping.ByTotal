@@ -5,6 +5,12 @@ namespace Nop.Plugin.Shipping.ByTotal.Models
 {
     public class ShippingByTotalModel : BaseNopEntityModel
     {
+        [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Store")]
+        public int StoreId { get; set; }
+
+        [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Store")]
+        public string StoreName { get; set; }
+
         [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Country")]
         public int CountryId { get; set; }
 

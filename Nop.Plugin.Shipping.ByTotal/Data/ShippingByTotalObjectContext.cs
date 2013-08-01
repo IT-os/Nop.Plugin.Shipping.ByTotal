@@ -42,10 +42,6 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         /// </summary>
         public void Install()
         {
-            //It's required to set initializer to null (for SQL Server Compact).
-            //otherwise, you'll get something like "The model backing the 'your context name' context has changed since the database was created. Consider using Code First Migrations to update the database"            
-            Database.SetInitializer<ShippingByTotalObjectContext>(null);
-
             //create table
             var dbScript = CreateDatabaseScript();
             Database.ExecuteSqlCommand(dbScript);
@@ -57,9 +53,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         /// </summary>
         public void Uninstall()
         {
-            var dbScript = "DROP TABLE ShippingByTotal";
-            Database.ExecuteSqlCommand(dbScript);
-            SaveChanges();
+            //drop table
+            this.DropPluginTable("ShippingByTotal");
         }
 
         public IList<TEntity> ExecuteStoredProcedureList<TEntity>(string commandText, params object[] parameters) where TEntity : BaseEntity, new()

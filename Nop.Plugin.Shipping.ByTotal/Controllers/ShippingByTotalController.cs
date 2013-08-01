@@ -12,6 +12,7 @@ using Nop.Services.Directory;
 using Nop.Services.Localization;
 using Nop.Services.Security;
 using Nop.Services.Shipping;
+using Nop.Services.Stores;
 using Nop.Web.Framework.Controllers;
 using Telerik.Web.Mvc;
 
@@ -21,6 +22,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
     public class ShippingByTotalController : Controller
     {
         private readonly IShippingService _shippingService;
+        private readonly IStoreService _storeService;
         private readonly ISettingService _settingService;
         private readonly IShippingByTotalService _shippingByTotalService;
         private readonly ShippingByTotalSettings _shippingByTotalSettings;
@@ -32,6 +34,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         private readonly ILocalizationService _localizationService;
 
         public ShippingByTotalController(IShippingService shippingService,
+            IStoreService storeService,
             ISettingService settingService,
             IShippingByTotalService shippingByTotalService,
             ShippingByTotalSettings shippingByTotalSettings,
@@ -43,6 +46,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             ILocalizationService localizationService)
         {
             this._shippingService = shippingService;
+            this._storeService = storeService;
             this._settingService = settingService;
             this._shippingByTotalService = shippingByTotalService;
             this._shippingByTotalSettings = shippingByTotalSettings;
@@ -74,11 +78,21 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             }
 
             var model = new ShippingByTotalListModel();
+
+            // stores
+            model.AvailableStores.Add(new SelectListItem() { Text = "*", Value = "0" });
+            foreach (var store in _storeService.GetAllStores())
+            {
+                model.AvailableStores.Add(new SelectListItem() { Text = store.Name, Value = store.Id.ToString() });
+            }
+
+            // shipping methods
             foreach (var sm in shippingMethods)
             {
                 model.AvailableShippingMethods.Add(new SelectListItem() { Text = sm.Name, Value = sm.Id.ToString() });
             }
 
+            // countries
             model.AvailableCountries.Add(new SelectListItem() { Text = "*", Value = "0" });
             var countries = _countryService.GetAllCountries(true);
             foreach (var c in countries)
@@ -89,35 +103,6 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             model.AvailableStates.Add(new SelectListItem() { Text = "*", Value = "0" });
             model.LimitMethodsToCreated = _shippingByTotalSettings.LimitMethodsToCreated;
             model.PrimaryStoreCurrencyCode = _currencyService.GetCurrencyById(_currencySettings.PrimaryStoreCurrencyId).CurrencyCode;
-
-            model.Records = _shippingByTotalService.GetAllShippingByTotalRecords()
-                .Select(x =>
-                {
-                    var m = new ShippingByTotalModel
-                    {
-                        Id = x.Id,
-                        ShippingMethodId = x.ShippingMethodId,
-                        CountryId = x.CountryId,
-                        StateProvinceId = x.StateProvinceId,
-                        Zip = x.Zip,
-                        From = x.From,
-                        To = x.To,
-                        UsePercentage = x.UsePercentage,
-                        ShippingChargePercentage = x.ShippingChargePercentage,
-                        ShippingChargeAmount = x.ShippingChargeAmount,
-                    };
-                    var shippingMethod = _shippingService.GetShippingMethodById(x.ShippingMethodId);
-                    m.ShippingMethodName = (shippingMethod != null) ? shippingMethod.Name : "Unavailable";
-
-                    var c = _countryService.GetCountryById(x.CountryId);
-                    m.CountryName = (c != null) ? c.Name : "*";
-                    var s = _stateProvinceService.GetStateProvinceById(x.StateProvinceId);
-                    m.StateProvinceName = (s != null) ? s.Name : "*";
-                    m.Zip = (!String.IsNullOrEmpty(x.Zip)) ? x.Zip : "*";
-
-                    return m;
-                })
-                .ToList();
 
             return View("Nop.Plugin.Shipping.ByTotal.Views.ShippingByTotal.Configure", model);
         }
@@ -130,12 +115,13 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                 return Content(_localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied"));
             }
 
-            var sbwModel = _shippingByTotalService.GetAllShippingByTotalRecords()
-                .Select(x =>
+            var records = _shippingByTotalService.GetAllShippingByTotalRecords(command.Page - 1, command.PageSize);
+            var sbtModel = records.Select(x =>
                 {
                     var m = new ShippingByTotalModel
                     {
                         Id = x.Id,
+                        StoreId = x.StoreId,
                         ShippingMethodId = x.ShippingMethodId,
                         CountryId = x.CountryId,
                         From = x.From,
@@ -144,13 +130,24 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                         ShippingChargePercentage = x.ShippingChargePercentage,
                         ShippingChargeAmount = x.ShippingChargeAmount,
                     };
+
+                    // shipping method
                     var shippingMethod = _shippingService.GetShippingMethodById(x.ShippingMethodId);
                     m.ShippingMethodName = (shippingMethod != null) ? shippingMethod.Name : "Unavailable";
 
+                    // store
+                    var store = _storeService.GetStoreById(x.StoreId);
+                    m.StoreName = (store != null) ? store.Name : "*";
+
+                    // country
                     var c = _countryService.GetCountryById(x.CountryId);
                     m.CountryName = (c != null) ? c.Name : "*";
+
+                    // state/province
                     var s = _stateProvinceService.GetStateProvinceById(x.StateProvinceId);
                     m.StateProvinceName = (s != null) ? s.Name : "*";
+
+                    // zip
                     m.Zip = (!String.IsNullOrEmpty(x.Zip)) ? x.Zip : "*";
 
                     return m;
@@ -158,8 +155,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                 .ToList();
             var model = new GridModel<ShippingByTotalModel>
             {
-                Data = sbwModel,
-                Total = sbwModel.Count
+                Data = sbtModel,
+                Total = records.TotalCount
             };
 
             return new JsonResult
@@ -220,6 +217,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             var shippingByTotalRecord = new ShippingByTotalRecord
             {
                 ShippingMethodId = model.AddShippingMethodId,
+                StoreId = model.AddStoreId,
                 CountryId = model.AddCountryId,
                 StateProvinceId = model.AddStateProvinceId,
                 Zip = model.AddZip,

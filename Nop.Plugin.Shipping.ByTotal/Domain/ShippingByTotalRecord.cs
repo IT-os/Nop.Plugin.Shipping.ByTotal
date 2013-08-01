@@ -8,6 +8,11 @@ namespace Nop.Plugin.Shipping.ByTotal.Domain
     public partial class ShippingByTotalRecord : BaseEntity
     {
         /// <summary>
+        /// Gets or sets the store identifier
+        /// </summary>
+        public int StoreId { get; set; }
+
+        /// <summary>
         /// Gets or sets the country identifier
         /// </summary>
         public int CountryId { get; set; }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using Nop.Core;
 using Nop.Plugin.Shipping.ByTotal.Domain;
 
 namespace Nop.Plugin.Shipping.ByTotal.Services
@@ -8,8 +8,10 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <summary>
         /// Gets all the ShippingByTotalRecords
         /// </summary>
+        /// <param name="pageIndex">page index</param>
+        /// <param name="pageSize">page size</param>
         /// <returns>ShippingByTotalRecord collection</returns>
-        IList<ShippingByTotalRecord> GetAllShippingByTotalRecords();
+        IPagedList<ShippingByTotalRecord> GetAllShippingByTotalRecords(int pageIndex = 0, int pageSize = int.MaxValue);
 
         /// <summary>
         /// Finds the ShippingByTotalRecord by its identifier
@@ -22,13 +24,15 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// Finds the ShippingByTotalRecord
         /// </summary>
         /// <param name="shippingMethodId">shipping method identifier</param>
+        /// <param name="storeId">store identifier</param>
+        /// <param name="subtotal">order's subtotal</param>
         /// <param name="countryId">country identifier</param>
         /// <param name="subtotal">subtotal</param>
         /// <param name="stateProvinceId">state province identifier</param>
         /// <param name="zip">Zip code</param>
         /// <returns>ShippingByTotalRecord</returns>
-        ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int countryId, 
-            decimal subTotal, int stateProvinceId, string zip);
+        ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int storeId,
+            int countryId, decimal subtotal, int stateProvinceId, string zip);
 
         /// <summary>
         /// Deletes the ShippingByTotalRecord

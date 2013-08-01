@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Web.Routing;
+using Nop.Core;
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Plugins;
 using Nop.Plugin.Shipping.ByTotal.Data;
@@ -18,6 +19,7 @@ namespace Nop.Plugin.Shipping.ByTotal
         #region Fields
 
         private readonly IShippingService _shippingService;
+        private readonly IStoreContext _storeContext;
         private readonly IShippingByTotalService _shippingByTotalService;
         private readonly ShippingByTotalSettings _shippingByTotalSettings;
         private readonly ShippingByTotalObjectContext _objectContext;
@@ -40,6 +42,7 @@ namespace Nop.Plugin.Shipping.ByTotal
         /// <param name="settingService">Settings service</param>
         /// <param name="logger">Logger</param>
         public ByTotalShippingComputationMethod(IShippingService shippingService,
+            IStoreContext storeContext,
             IShippingByTotalService shippingByTotalService,
             ShippingByTotalSettings shippingByTotalSettings,
             ShippingByTotalObjectContext objectContext,
@@ -48,6 +51,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             ISettingService settingService)
         {
             this._shippingService = shippingService;
+            this._storeContext = storeContext;
             this._shippingByTotalService = shippingByTotalService;
             this._shippingByTotalSettings = shippingByTotalSettings;
             this._objectContext = objectContext;
@@ -95,11 +99,11 @@ namespace Nop.Plugin.Shipping.ByTotal
         /// <param name="stateProvinceId">state province identifier</param>
         /// <param name="zip">Zip code</param>
         /// <returns>the rate for the shipping method</returns>
-        private decimal? GetRate(decimal subtotal, int shippingMethodId, int countryId, int stateProvinceId, string zip)
+        private decimal? GetRate(decimal subtotal, int shippingMethodId, int storeId, int countryId, int stateProvinceId, string zip)
         {
             decimal? shippingTotal = null;
 
-            var shippingByTotalRecord = _shippingByTotalService.FindShippingByTotalRecord(shippingMethodId, countryId, subtotal, stateProvinceId, zip);
+            var shippingByTotalRecord = _shippingByTotalService.FindShippingByTotalRecord(shippingMethodId, storeId, countryId, subtotal, stateProvinceId, zip);
 
             if (shippingByTotalRecord == null)
             {
@@ -169,6 +173,7 @@ namespace Nop.Plugin.Shipping.ByTotal
                 return response;
             }
 
+            var storeId = _storeContext.CurrentStore.Id;
             int countryId = getShippingOptionRequest.ShippingAddress.CountryId.HasValue ? getShippingOptionRequest.ShippingAddress.CountryId.Value : 0;
             int stateProvinceId = getShippingOptionRequest.ShippingAddress.StateProvinceId.HasValue ? getShippingOptionRequest.ShippingAddress.StateProvinceId.Value : 0;
             string zip = getShippingOptionRequest.ShippingAddress.ZipPostalCode;
@@ -185,7 +190,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             var shippingMethods = _shippingService.GetAllShippingMethods(countryId);
             foreach (var shippingMethod in shippingMethods)
             {
-                decimal? rate = GetRate(subTotal, shippingMethod.Id, countryId, stateProvinceId, zip);
+                decimal? rate = GetRate(subTotal, shippingMethod.Id, storeId, countryId, stateProvinceId, zip);
                 if (rate.HasValue)
                 {
                     var shippingOption = new ShippingOption();
@@ -235,32 +240,34 @@ namespace Nop.Plugin.Shipping.ByTotal
 
             _objectContext.Install();
 
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle", "Add new 'Shipping By Total' record");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country", "Country");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country.Hint", "If an asterisk is selected, then this shipping rate will apply to all customers, regardless of the country.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.StateProvince", "State / province");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.StateProvince.Hint", "If an asterisk is selected, then this shipping rate will apply to all customers from the given country, regardless of the state / province.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Zip", "Zip");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Zip.Hint", "Zip / postal code. If zip is empty, then this shipping rate will apply to all customers from the given country or state / province, regardless of the zip code.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod", "Shipping method");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod.Hint", "The shipping method.");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.From", "Order total From");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.From.Hint", "Order total from.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated", "Limit shipping methods to configured ones");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated.Hint", "If you check this option, then your customers will be limited to shipping options configured here. Otherwise, they'll be able to choose any existing shipping options even if they're not configured here (zero shipping fee in this case).");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount", "Charge amount");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount.Hint", "Charge amount.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage", "Charge percentage (of subtotal)");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage.Hint", "Charge percentage (of subtotal).");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod", "Shipping method");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod.Hint", "The shipping method.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.StateProvince", "State / province");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.StateProvince.Hint", "If an asterisk is selected, then this shipping rate will apply to all customers from the given country, regardless of the state / province.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Store", "Store");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Store.Hint", "This shipping rate will apply to all stores if an asterisk is selected.");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To", "Order total To");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To.Hint", "Order total to.");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage", "Use percentage");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage.Hint", "Check to use 'charge percentage' value.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage", "Charge percentage (of subtotal)");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage.Hint", "Charge percentage (of subtotal).");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount", "Charge amount");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount.Hint", "Charge amount.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated", "Limit shipping methods to configured ones");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated.Hint", "If you check this option, then your customers will be limited to shipping options configured here. Otherwise, they'll be able to choose any existing shipping options even if they're not configured here (zero shipping fee in this case).");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle", "Add new 'Shipping By Total' record");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.SettingsTitle", "Shipping By Total Settings");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Zip", "Zip");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Zip.Hint", "Zip / postal code. If zip is empty, then this shipping rate will apply to all customers from the given country or state / province, regardless of the zip code.");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied", "Access denied");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.Saved", "Saved");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed", "Failed to add record.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.Saved", "Saved");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.StatesFailed", "Failed to retrieve states.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.SettingsTitle", "Shipping By Total Settings");
 
             base.Install();
 
@@ -276,32 +283,34 @@ namespace Nop.Plugin.Shipping.ByTotal
 
             _objectContext.Uninstall();
 
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country.Hint");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.StateProvince");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.StateProvince.Hint");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Zip");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Zip.Hint");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod.Hint");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.From");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.From.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingMethod.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.StateProvince");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.StateProvince.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Store");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Store.Hint");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To.Hint");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage.Hint");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage.Hint");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount.Hint");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.LimitMethodsToCreated.Hint");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.SettingsTitle");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Zip");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Zip.Hint");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied");
-            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.Saved");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.Saved");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.StatesFailed");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.SettingsTitle");
 
             base.Uninstall();
         }

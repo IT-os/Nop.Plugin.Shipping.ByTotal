@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nop.Core;
 using Nop.Core.Caching;
 using Nop.Core.Data;
 using Nop.Plugin.Shipping.ByTotal.Domain;
@@ -47,17 +48,19 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <summary>
         /// Gets all the ShippingByTotalRecords
         /// </summary>
+        /// <param name="pageIndex">page index</param>
+        /// <param name="pageSize">page size</param>
         /// <returns>ShippingByTotalRecord collection</returns>
-        public virtual IList<ShippingByTotalRecord> GetAllShippingByTotalRecords()
+        public virtual IPagedList<ShippingByTotalRecord> GetAllShippingByTotalRecords(int pageIndex = 0, int pageSize = int.MaxValue)
         {
             string key = SHIPPINGBYTOTAL_ALL_KEY;
             return _cacheManager.Get(key, () =>
             {
                 var query = from sbt in _sbtRepository.Table
-                            orderby sbt.CountryId, sbt.StateProvinceId, sbt.Zip, sbt.ShippingMethodId, sbt.From
+                            orderby sbt.StoreId, sbt.CountryId, sbt.StateProvinceId, sbt.Zip, sbt.ShippingMethodId, sbt.From
                             select sbt;
 
-                var records = query.ToList();
+                var records = new PagedList<ShippingByTotalRecord>(query, pageIndex, pageSize);
 
                 return records;
             });
@@ -84,12 +87,15 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// Finds the ShippingByTotalRecord
         /// </summary>
         /// <param name="shippingMethodId">shipping method identifier</param>
+        /// <param name="storeId">store identifier</param>
+        /// <param name="subtotal">order's subtotal</param>
         /// <param name="countryId">country identifier</param>
         /// <param name="subtotal">subtotal</param>
         /// <param name="stateProvinceId">state province identifier</param>
         /// <param name="zip">Zip code</param>
-        /// <returns>ShippingByTotalRecord</returns> 
-        public virtual ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int countryId, decimal subtotal, int stateProvinceId, string zip)
+        /// <returns>ShippingByTotalRecord</returns>
+        public virtual ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int storeId,
+            int countryId, decimal subtotal, int stateProvinceId, string zip)
         {
             if (zip == null)
             {
@@ -105,9 +111,29 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
                 .Where(sbt => sbt.ShippingMethodId == shippingMethodId && subtotal >= sbt.From && subtotal <= sbt.To)
                 .ToList();
 
+            //filter by store
+            var matchedByStore = new List<ShippingByTotalRecord>();
+            foreach (var sbt in existingRates)
+            {
+                if (storeId == sbt.StoreId)
+                {
+                    matchedByStore.Add(sbt);
+                }
+            }
+            if (matchedByStore.Count == 0)
+            {
+                foreach (var sbt in existingRates)
+                {
+                    if (sbt.StoreId == 0)
+                    {
+                        matchedByStore.Add(sbt);
+                    }
+                }
+            }
+
             //filter by country
             var matchedByCountry = new List<ShippingByTotalRecord>();
-            foreach (var sbt in existingRates)
+            foreach (var sbt in matchedByStore)
             {
                 if (countryId == sbt.CountryId)
                 {
@@ -116,7 +142,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             }
             if (matchedByCountry.Count == 0)
             {
-                foreach (var sbt in existingRates)
+                foreach (var sbt in matchedByStore)
                 {
                     if (sbt.CountryId == 0)
                     {
@@ -136,11 +162,11 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             }
             if (matchedByStateProvince.Count == 0)
             {
-                foreach (var sbw in matchedByCountry)
+                foreach (var sbt in matchedByCountry)
                 {
-                    if (sbw.StateProvinceId == 0)
+                    if (sbt.StateProvinceId == 0)
                     {
-                        matchedByStateProvince.Add(sbw);
+                        matchedByStateProvince.Add(sbt);
                     }
                 }
             }
