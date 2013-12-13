@@ -26,7 +26,8 @@
                         columns.Bound(x => x.StoreName).ReadOnly();
                         columns.Bound(x => x.CountryName).ReadOnly();
                         columns.Bound(x => x.StateProvinceName).ReadOnly();
-                        columns.Bound(x => x.Zip);
+                        columns.Bound(x => x.ZipPostalCode);
+                        columns.Bound(x => x.DisplayOrder);
                         columns.Bound(x => x.ShippingMethodName).ReadOnly();
                         columns.Bound(x => x.From);
                         columns.Bound(x => x.To);
@@ -77,13 +78,13 @@
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     alert('@T("Plugins.Shipping.ByTotal.ManageShippingSettings.StatesFailed").Text');
-                 }
+                }
             });
         });
     });
 </script>
 @using (Html.BeginForm())
-{       
+{
     <script type="text/javascript">
         $(function () {
             $("#@Html.FieldIdFor(model => model.AddUsePercentage)").click(toggleAddUsePercentage);
@@ -145,6 +146,13 @@
                 return false;
             });
         });
+
+        $(function () {
+            $('#resetshippingbytotalrecord').click(function () {
+                $('#@Html.FieldIdFor(model => model.AddUsePercentage)').attr('checked', false);
+                toggleAddUsePercentage();
+            });
+        });
     </script>
     <fieldset>
         <legend><span style="font-weight: 700">@T("Plugins.Shipping.ByTotal.AddNewRecordTitle")</span></legend>
@@ -178,11 +186,20 @@
             </tr>
             <tr>
                 <td class="adminTitle">
-                    @Html.NopLabelFor(model => model.AddZip):
+                    @Html.NopLabelFor(model => model.AddZipPostalCode):
                 </td>
                 <td class="adminData">
-                    @Html.EditorFor(model => model.AddZip)
-                    @Html.ValidationMessageFor(model => model.AddZip)
+                    @Html.EditorFor(model => model.AddZipPostalCode)
+                    @Html.ValidationMessageFor(model => model.AddZipPostalCode)
+                </td>
+            </tr>
+            <tr>
+                <td class="adminTitle">
+                    @Html.NopLabelFor(model => model.AddDisplayOrder):
+                </td>
+                <td class="adminData">
+                    @Html.EditorFor(model => model.AddDisplayOrder)
+                    @Html.ValidationMessageFor(model => model.AddDisplayOrder)
                 </td>
             </tr>
             <tr>
@@ -242,13 +259,15 @@
             <tr>
                 <td colspan="2">
                     <button type="button" id="addshippingbytotalrecord" class="t-button">
-                        @T("Admin.Common.AddNew")</button>
+                        @T("Admin.Common.AddNew")
+                    </button>
+                    <button type="reset" id="resetshippingbytotalrecord" class="t-button">
+                        @T("Plugins.Shipping.ByTotal.Reset")
+                    </button>
                 </td>
             </tr>
         </table>
     </fieldset>
-    <br />
-    <hr />
     <br />
     <fieldset>
         <legend><span style="font-weight: 700">@T("Plugins.Shipping.ByTotal.SettingsTitle")</span></legend>
@@ -265,7 +284,8 @@
             <tr>
                 <td colspan="2">
                     <button type="button" id="savegeneralsettings" class="t-button">
-                        @T("Admin.Common.Save")</button>
+                        @T("Admin.Common.Save")
+                    </button>
                 </td>
             </tr>
         </table>

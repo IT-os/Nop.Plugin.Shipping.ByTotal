@@ -124,6 +124,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                         StoreId = x.StoreId,
                         ShippingMethodId = x.ShippingMethodId,
                         CountryId = x.CountryId,
+                        DisplayOrder = x.DisplayOrder,
                         From = x.From,
                         To = x.To,
                         UsePercentage = x.UsePercentage,
@@ -147,8 +148,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                     var s = _stateProvinceService.GetStateProvinceById(x.StateProvinceId);
                     m.StateProvinceName = (s != null) ? s.Name : "*";
 
-                    // zip
-                    m.Zip = (!String.IsNullOrEmpty(x.Zip)) ? x.Zip : "*";
+                    // ZIP / postal code
+                    m.ZipPostalCode = (!String.IsNullOrEmpty(x.ZipPostalCode)) ? x.ZipPostalCode : "*";
 
                     return m;
                 })
@@ -179,7 +180,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             }
 
             var shippingByTotalRecord = _shippingByTotalService.GetShippingByTotalRecordById(model.Id);
-            shippingByTotalRecord.Zip = model.Zip == "*" ? null : model.Zip;
+            shippingByTotalRecord.ZipPostalCode = model.ZipPostalCode == "*" ? null : model.ZipPostalCode;
+            shippingByTotalRecord.DisplayOrder = model.DisplayOrder;
             shippingByTotalRecord.From = model.From;
             shippingByTotalRecord.To = model.To;
             shippingByTotalRecord.UsePercentage = model.UsePercentage;
@@ -214,13 +216,26 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                 return Json(new { Result = false, Message = _localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied") });
             }
 
+            var zipPostalCode = model.AddZipPostalCode;
+
+            if (zipPostalCode != null)
+            {
+                int zipMaxLength = ByTotalShippingComputationMethod.ZipPostalCodeMaxLength;
+                zipPostalCode = zipPostalCode.Trim();
+                if (zipPostalCode.Length > zipMaxLength)
+                {
+                    zipPostalCode = zipPostalCode.Substring(0, zipMaxLength);
+                }
+            }
+
             var shippingByTotalRecord = new ShippingByTotalRecord
             {
                 ShippingMethodId = model.AddShippingMethodId,
                 StoreId = model.AddStoreId,
                 CountryId = model.AddCountryId,
                 StateProvinceId = model.AddStateProvinceId,
-                Zip = model.AddZip,
+                ZipPostalCode = zipPostalCode,
+                DisplayOrder = model.AddDisplayOrder,
                 From = model.AddFrom,
                 To = model.AddTo,
                 UsePercentage = model.AddUsePercentage,

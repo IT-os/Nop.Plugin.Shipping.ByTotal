@@ -24,8 +24,11 @@ namespace Nop.Plugin.Shipping.ByTotal.Models
         [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.StateProvince")]
         public int AddStateProvinceId { get; set; }
 
-        [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Zip")]
-        public string AddZip { get; set; }
+        [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.ZipPostalCode")]
+        public string AddZipPostalCode { get; set; }
+
+        [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.DisplayOrder")]
+        public int AddDisplayOrder { get; set; }
 
         [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.ShippingMethod")]
         public int AddShippingMethodId { get; set; }

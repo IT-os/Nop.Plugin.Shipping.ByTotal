@@ -23,9 +23,14 @@ namespace Nop.Plugin.Shipping.ByTotal.Domain
         public int StateProvinceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the zip code
+        /// Gets or sets the ZIP / postal code
         /// </summary>
-        public string Zip { get; set; }
+        public string ZipPostalCode { get; set; }
+
+        /// <summary>
+        /// Display order for the record
+        /// </summary>
+        public int DisplayOrder { get; set; }
 
         /// <summary>
         /// Gets or sets the shipping method identifier

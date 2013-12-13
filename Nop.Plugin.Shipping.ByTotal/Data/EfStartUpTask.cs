@@ -14,7 +14,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
 
         public int Order
         {
-            //ensure that this task is run first 
+            //ensure that this task is run first
             get { return 0; }
         }
     }

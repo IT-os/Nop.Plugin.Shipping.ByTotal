@@ -29,10 +29,10 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <param name="countryId">country identifier</param>
         /// <param name="subtotal">subtotal</param>
         /// <param name="stateProvinceId">state province identifier</param>
-        /// <param name="zip">Zip code</param>
+        /// <param name="zipPostalCode">ZIP / postal code</param>
         /// <returns>ShippingByTotalRecord</returns>
         ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int storeId,
-            int countryId, decimal subtotal, int stateProvinceId, string zip);
+            int countryId, decimal subtotal, int stateProvinceId, string zipPostalCode);
 
         /// <summary>
         /// Deletes the ShippingByTotalRecord
