@@ -251,7 +251,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
                         {
                             if (wildcardZip[x] != '?' && targetZip[x] != wildcardZip[x])
                             {
-                                continue;
+                                break;
                             }
 
                             if (x + 1 == wildcardZip.Length)
