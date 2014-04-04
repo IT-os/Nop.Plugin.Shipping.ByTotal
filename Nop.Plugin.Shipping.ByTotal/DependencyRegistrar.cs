@@ -8,6 +8,7 @@ using Nop.Data;
 using Nop.Plugin.Shipping.ByTotal.Data;
 using Nop.Plugin.Shipping.ByTotal.Domain;
 using Nop.Plugin.Shipping.ByTotal.Services;
+using Nop.Web.Framework.Mvc;
 
 namespace Nop.Plugin.Shipping.ByTotal
 {
@@ -17,30 +18,8 @@ namespace Nop.Plugin.Shipping.ByTotal
         {
             builder.RegisterType<ShippingByTotalService>().As<IShippingByTotalService>().InstancePerHttpRequest();
 
-            //data layer
-            var dataSettingsManager = new DataSettingsManager();
-            var dataProviderSettings = dataSettingsManager.LoadSettings();
-
-            if (dataProviderSettings != null && dataProviderSettings.IsValid())
-            {
-                //register named context
-                builder.Register<IDbContext>(c => new ShippingByTotalObjectContext(dataProviderSettings.DataConnectionString))
-                    .Named<IDbContext>("nop_object_context_shipping_total")
-                    .InstancePerHttpRequest();
-
-                builder.Register<ShippingByTotalObjectContext>(c => new ShippingByTotalObjectContext(dataProviderSettings.DataConnectionString))
-                    .InstancePerHttpRequest();
-            }
-            else
-            {
-                //register named context
-                builder.Register<IDbContext>(c => new ShippingByTotalObjectContext(c.Resolve<DataSettings>().DataConnectionString))
-                    .Named<IDbContext>("nop_object_context_shipping_total")
-                    .InstancePerHttpRequest();
-
-                builder.Register<ShippingByTotalObjectContext>(c => new ShippingByTotalObjectContext(c.Resolve<DataSettings>().DataConnectionString))
-                    .InstancePerHttpRequest();
-            }
+            //data context
+            this.RegisterPluginDataContext<ShippingByTotalObjectContext>(builder, "nop_object_context_shipping_total");
 
             //override required repository with our custom context
             builder.RegisterType<EfRepository<ShippingByTotalRecord>>()

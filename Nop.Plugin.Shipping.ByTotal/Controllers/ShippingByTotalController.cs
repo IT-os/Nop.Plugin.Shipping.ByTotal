@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Web.Mvc;
+using Nop.Core;
 using Nop.Core.Domain.Directory;
 using Nop.Plugin.Shipping.ByTotal.Domain;
 using Nop.Plugin.Shipping.ByTotal.Models;
@@ -14,12 +13,13 @@ using Nop.Services.Security;
 using Nop.Services.Shipping;
 using Nop.Services.Stores;
 using Nop.Web.Framework.Controllers;
-using Telerik.Web.Mvc;
+using Nop.Web.Framework.Kendoui;
+using Nop.Web.Framework.Mvc;
 
 namespace Nop.Plugin.Shipping.ByTotal.Controllers
 {
     [AdminAuthorize]
-    public class ShippingByTotalController : Controller
+    public class ShippingByTotalController : BasePluginController
     {
         private readonly IShippingService _shippingService;
         private readonly IStoreService _storeService;
@@ -61,9 +61,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         protected override void Initialize(System.Web.Routing.RequestContext requestContext)
         {
             //always set culture to 'en-US' (Telerik Grid has a bug related to editing decimal values in other cultures). Like currently it's done for admin area in Global.asax.cs
-            var culture = new CultureInfo("en-US");
-            Thread.CurrentThread.CurrentCulture = culture;
-            Thread.CurrentThread.CurrentUICulture = culture;
+            CommonHelper.SetTelerikCulture();
 
             base.Initialize(requestContext);
         }
@@ -107,8 +105,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return View("Nop.Plugin.Shipping.ByTotal.Views.ShippingByTotal.Configure", model);
         }
 
-        [HttpPost, GridAction(EnableCustomBinding = true)]
-        public ActionResult RatesList(GridCommand command)
+        [HttpPost]
+        public ActionResult RatesList(DataSourceRequest command)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
             {
@@ -143,10 +141,12 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                     // country
                     var c = _countryService.GetCountryById(x.CountryId);
                     m.CountryName = (c != null) ? c.Name : "*";
+                    m.CountryId = x.CountryId;
 
                     // state/province
                     var s = _stateProvinceService.GetStateProvinceById(x.StateProvinceId);
                     m.StateProvinceName = (s != null) ? s.Name : "*";
+                    m.StateProvinceId = x.StateProvinceId;
 
                     // ZIP / postal code
                     m.ZipPostalCode = (!String.IsNullOrEmpty(x.ZipPostalCode)) ? x.ZipPostalCode : "*";
@@ -154,20 +154,17 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                     return m;
                 })
                 .ToList();
-            var model = new GridModel<ShippingByTotalModel>
+            var gridModel = new DataSourceResult
             {
                 Data = sbtModel,
                 Total = records.TotalCount
             };
 
-            return new JsonResult
-            {
-                Data = model
-            };
+            return Json(gridModel);
         }
 
-        [GridAction(EnableCustomBinding = true)]
-        public ActionResult RateUpdate(ShippingByTotalModel model, GridCommand command)
+        [HttpPost]
+        public ActionResult RateUpdate(ShippingByTotalModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
             {
@@ -187,13 +184,17 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             shippingByTotalRecord.UsePercentage = model.UsePercentage;
             shippingByTotalRecord.ShippingChargeAmount = model.ShippingChargeAmount;
             shippingByTotalRecord.ShippingChargePercentage = model.ShippingChargePercentage;
+            shippingByTotalRecord.ShippingMethodId = model.ShippingMethodId;
+            shippingByTotalRecord.StoreId = model.StoreId;
+            shippingByTotalRecord.StateProvinceId = model.StateProvinceId;
+            shippingByTotalRecord.CountryId = model.CountryId;
             _shippingByTotalService.UpdateShippingByTotalRecord(shippingByTotalRecord);
 
-            return RatesList(command);
+            return new NullJsonResult();
         }
 
-        [GridAction(EnableCustomBinding = true)]
-        public ActionResult RateDelete(int id, GridCommand command)
+        [HttpPost]
+        public ActionResult RateDelete(int id)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
             {
@@ -205,7 +206,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             {
                 _shippingByTotalService.DeleteShippingByTotalRecord(shippingByTotalRecord);
             }
-            return RatesList(command);
+            return new NullJsonResult();
         }
 
         [HttpPost]
