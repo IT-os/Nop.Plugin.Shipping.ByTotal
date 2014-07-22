@@ -1,17 +1,18 @@
-﻿@{
-    Layout = "";
-
-    var gridPageSize = EngineContext.Current.Resolve<Nop.Core.Domain.Common.AdminAreaSettings>().GridPageSize;
-}
-@model ShippingByTotalListModel
+﻿@model ShippingByTotalListModel
 @using Nop.Plugin.Shipping.ByTotal.Models;
 @using Nop.Web.Framework;
 @using Nop.Core.Infrastructure;
+@{
+    Layout = "";
+
+    var defaultGridPageSize = EngineContext.Current.Resolve<Nop.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Nop.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+}
 <table class="adminContent">
     <tr>
         <td>
             <div id="shipping-bytotal-grid"></div>
-            <script>
+            <script type="text/javascript">
                 $(document).ready(function () {
                     $("#shipping-bytotal-grid").kendoGrid({
                         dataSource: {
@@ -57,13 +58,14 @@
                                 display_kendoui_grid_error(e);
                                 this.cancelChanges();
                             },
-                            pageSize: @(gridPageSize),
+                            pageSize: @(defaultGridPageSize),
                             serverPaging: true,
                             serverFiltering: true,
                             serverSorting: true
                         },
                         pageable: {
-                            refresh: true
+                            refresh: true,
+                            pageSizes: [@(gridPageSizes)]
                         },
                         editable: {
                             confirmation: false,

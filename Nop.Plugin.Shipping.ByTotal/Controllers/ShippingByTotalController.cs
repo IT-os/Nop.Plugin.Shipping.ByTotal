@@ -102,7 +102,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             model.LimitMethodsToCreated = _shippingByTotalSettings.LimitMethodsToCreated;
             model.PrimaryStoreCurrencyCode = _currencyService.GetCurrencyById(_currencySettings.PrimaryStoreCurrencyId).CurrencyCode;
 
-            return View("Nop.Plugin.Shipping.ByTotal.Views.ShippingByTotal.Configure", model);
+            return View("~/Plugins/Shipping.ByTotal/Views/ShippingByTotal/Configure.cshtml", model);
         }
 
         [HttpPost]
@@ -171,10 +171,10 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                 return Content(_localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied"));
             }
 
-            if (!ModelState.IsValid)
-            {
-                return new JsonResult { Data = "error" };
-            }
+            //if (!ModelState.IsValid)
+            //{
+            //    return new JsonResult { Data = "error" };
+            //}
 
             var shippingByTotalRecord = _shippingByTotalService.GetShippingByTotalRecordById(model.Id);
             shippingByTotalRecord.ZipPostalCode = model.ZipPostalCode == "*" ? null : model.ZipPostalCode;
@@ -182,8 +182,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             shippingByTotalRecord.From = model.From;
             shippingByTotalRecord.To = model.To;
             shippingByTotalRecord.UsePercentage = model.UsePercentage;
-            shippingByTotalRecord.ShippingChargeAmount = model.ShippingChargeAmount;
-            shippingByTotalRecord.ShippingChargePercentage = model.ShippingChargePercentage;
+            shippingByTotalRecord.ShippingChargePercentage = model.UsePercentage ? model.ShippingChargePercentage : 0;
+            shippingByTotalRecord.ShippingChargeAmount = !model.UsePercentage ? model.ShippingChargeAmount : 0;
             shippingByTotalRecord.ShippingMethodId = model.ShippingMethodId;
             shippingByTotalRecord.StoreId = model.StoreId;
             shippingByTotalRecord.StateProvinceId = model.StateProvinceId;

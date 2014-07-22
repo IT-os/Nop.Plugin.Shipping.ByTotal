@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using Autofac.Core;
-using Autofac.Integration.Mvc;
 using Nop.Core.Data;
 using Nop.Core.Infrastructure;
 using Nop.Core.Infrastructure.DependencyManagement;
@@ -16,7 +15,7 @@ namespace Nop.Plugin.Shipping.ByTotal
     {
         public virtual void Register(ContainerBuilder builder, ITypeFinder typeFinder)
         {
-            builder.RegisterType<ShippingByTotalService>().As<IShippingByTotalService>().InstancePerHttpRequest();
+            builder.RegisterType<ShippingByTotalService>().As<IShippingByTotalService>().InstancePerRequest();
 
             //data context
             this.RegisterPluginDataContext<ShippingByTotalObjectContext>(builder, "nop_object_context_shipping_total");
@@ -25,7 +24,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             builder.RegisterType<EfRepository<ShippingByTotalRecord>>()
                 .As<IRepository<ShippingByTotalRecord>>()
                 .WithParameter(ResolvedParameter.ForNamed<IDbContext>("nop_object_context_shipping_total"))
-                .InstancePerHttpRequest();
+                .InstancePerRequest();
         }
 
         public int Order
