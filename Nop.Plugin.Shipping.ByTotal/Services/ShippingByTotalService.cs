@@ -218,13 +218,17 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
                 zipPostalCode = RemovePlus4(zipPostalCode);
             }
 
-            if (zipPostalCode.Equals(shippingByTotalRecordZip, StringComparison.InvariantCultureIgnoreCase))
+            // exact ZIP / postal code match
+            if (zipPostalCode.Equals(shippingByTotalRecordZip, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
             if (shippingByTotalRecordZip != null &&
-               (shippingByTotalRecordZip.Contains(',') || shippingByTotalRecordZip.Contains(':') || shippingByTotalRecordZip.Contains('?')))
+               (shippingByTotalRecordZip.Contains(',') || // multiple zip entries
+                shippingByTotalRecordZip.Contains(':') || // numeric range
+                shippingByTotalRecordZip.Contains('?') || // character wildcard
+                shippingByTotalRecordZip.Contains('*')))  // starts with wildcard
             {
                 var allZips = shippingByTotalRecordZip.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -237,11 +241,13 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
                         zipEntry = RemovePlus4(zipEntry);
                     }
 
-                    if (zipPostalCode.Equals(zipEntry, StringComparison.InvariantCultureIgnoreCase))
+                    // exact match
+                    if (zipPostalCode.Equals(zipEntry, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
 
+                    // match with wildcard characters
                     if (zipEntry.Contains('?') && zipPostalCode.Length == zipEntry.Length)
                     {
                         var targetZip = zipPostalCode.ToLower().ToArray();
@@ -261,6 +267,18 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
                         }
                     }
 
+                    // 'starts with' wildcard search contributed by cwjackson (http://www.codeplex.com/site/users/view/cwjackson)
+                    if (zipEntry.Contains('*'))
+                    {
+                        var i = zipEntry.IndexOf('*');
+                        if (zipPostalCode.StartsWith(zipEntry.Substring(0, i), StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                        break;
+                    }
+
+                    // match in numeric range
                     if (zipEntry.Contains(':'))
                     {
                         var zipRanges = zipEntry.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);

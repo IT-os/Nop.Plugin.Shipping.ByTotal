@@ -114,10 +114,8 @@ namespace Nop.Plugin.Shipping.ByTotal
                 {
                     return null;
                 }
-                else
-                {
-                    return decimal.Zero;
-                }
+
+                return decimal.Zero;
             }
 
             if (shippingByTotalRecord.UsePercentage && shippingByTotalRecord.ShippingChargePercentage <= decimal.Zero)
@@ -181,13 +179,13 @@ namespace Nop.Plugin.Shipping.ByTotal
             int stateProvinceId = getShippingOptionRequest.ShippingAddress.StateProvinceId.HasValue ? getShippingOptionRequest.ShippingAddress.StateProvinceId.Value : 0;
             string zipPostalCode = getShippingOptionRequest.ShippingAddress.ZipPostalCode;
             decimal subTotal = decimal.Zero;
-            foreach (var shoppingCartItem in getShippingOptionRequest.Items)
+            foreach (var packageItem in getShippingOptionRequest.Items)
             {
-                if (shoppingCartItem.IsFreeShipping || !shoppingCartItem.IsShipEnabled)
+                if (packageItem.ShoppingCartItem.IsFreeShipping || !packageItem.ShoppingCartItem.IsShipEnabled)
                 {
                     continue;
                 }
-                subTotal += _priceCalculationService.GetSubTotal(shoppingCartItem, true);
+                subTotal += _priceCalculationService.GetSubTotal(packageItem.ShoppingCartItem, true);
             }
 
             var shippingMethods = _shippingService.GetAllShippingMethods(countryId);
@@ -227,7 +225,7 @@ namespace Nop.Plugin.Shipping.ByTotal
         {
             actionName = "Configure";
             controllerName = "ShippingByTotal";
-            routeValues = new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Shipping.ByTotal.Controllers" }, { "area", null } };
+            routeValues = new RouteValueDictionary { { "Namespaces", "Nop.Plugin.Shipping.ByTotal.Controllers" }, { "area", null } };
         }
 
         /// <summary>
@@ -267,7 +265,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage", "Use percentage");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage.Hint", "Check to use 'charge percentage' value.");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ZipPostalCode", "ZIP / postal code");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ZipPostalCode.Hint", "If ZIP / postal code is empty, this shipping rate will apply to all customers from the given country or state / province, regardless of the ZIP / postal code. The ZIP / postal codes can be entered in multiple formats: single (11111), multiple comma separated (11111, 22222), wildcard (S4? ???), numeric ranges (10000:30000), or combinations of the preceding formats (11111, 100??, 11111:22222, 33333).");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ZipPostalCode.Hint", "If ZIP / postal code is empty, this shipping rate will apply to all customers from the given country or state / province, regardless of the ZIP / postal code. The ZIP / postal codes can be entered in multiple formats: single (11111), multiple comma separated (11111, 22222), wildcard characters (S4? ???), starts with wildcard (S4*), numeric ranges (10000:30000), or combinations of the preceding formats (11111, 100??, 11111:22222, 33333).");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied", "Access denied");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed", "Failed to add record.");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.Saved", "Saved");

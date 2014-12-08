@@ -1,9 +1,9 @@
-﻿using System.Data.Entity.ModelConfiguration;
+﻿using Nop.Data.Mapping;
 using Nop.Plugin.Shipping.ByTotal.Domain;
 
 namespace Nop.Plugin.Shipping.ByTotal.Data
 {
-    public class ShippingByTotalRecordMap : EntityTypeConfiguration<ShippingByTotalRecord>
+    public class ShippingByTotalRecordMap : NopEntityTypeConfiguration<ShippingByTotalRecord>
     {
         public ShippingByTotalRecordMap()
         {
