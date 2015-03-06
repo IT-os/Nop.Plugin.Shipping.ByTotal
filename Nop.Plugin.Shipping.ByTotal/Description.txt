@@ -1,7 +1,7 @@
 ﻿Group: Shipping rate computation
 FriendlyName: Shipping by total
 SystemName: Shipping.ByTotal
-Version: 1.18
+Version: 1.19
 SupportedVersions: 3.50
 Author: mb
 DisplayOrder: 1

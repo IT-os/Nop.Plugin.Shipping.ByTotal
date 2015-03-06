@@ -275,7 +275,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
                         {
                             return true;
                         }
-                        break;
+                        continue;
                     }
 
                     // match in numeric range
