@@ -8,8 +8,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <summary>
         /// Gets all the ShippingByTotalRecords
         /// </summary>
-        /// <param name="pageIndex">page index</param>
-        /// <param name="pageSize">page size</param>
+        /// <param name="pageIndex">Page index</param>
+        /// <param name="pageSize">Page size</param>
         /// <returns>ShippingByTotalRecord collection</returns>
         IPagedList<ShippingByTotalRecord> GetAllShippingByTotalRecords(int pageIndex = 0, int pageSize = int.MaxValue);
 
@@ -23,15 +23,16 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <summary>
         /// Finds the ShippingByTotalRecord
         /// </summary>
-        /// <param name="shippingMethodId">shipping method identifier</param>
-        /// <param name="storeId">store identifier</param>
-        /// <param name="subtotal">order's subtotal</param>
-        /// <param name="countryId">country identifier</param>
-        /// <param name="subtotal">subtotal</param>
-        /// <param name="stateProvinceId">state province identifier</param>
+        /// <param name="shippingMethodId">Shipping method identifier</param>
+        /// <param name="storeId">Store identifier</param>
+        /// <param name="warehouseId">Warehouse identifier</param>
+        /// <param name="subtotal">Order's subtotal</param>
+        /// <param name="countryId">Country identifier</param>
+        /// <param name="subtotal">Subtotal</param>
+        /// <param name="stateProvinceId">State / province identifier</param>
         /// <param name="zipPostalCode">ZIP / postal code</param>
         /// <returns>ShippingByTotalRecord</returns>
-        ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int storeId,
+        ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int storeId, int warehouseId,
             int countryId, decimal subtotal, int stateProvinceId, string zipPostalCode);
 
         /// <summary>

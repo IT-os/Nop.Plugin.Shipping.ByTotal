@@ -13,10 +13,14 @@ namespace Nop.Plugin.Shipping.ByTotal.Models
             AvailableStates = new List<SelectListItem>();
             AvailableShippingMethods = new List<SelectListItem>();
             AvailableStores = new List<SelectListItem>();
+            AvailableWarehouses = new List<SelectListItem>();
         }
 
         [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Store")]
         public int AddStoreId { get; set; }
+
+        [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Warehouse")]
+        public int AddWarehouseId { get; set; }
 
         [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Country")]
         public int AddCountryId { get; set; }
@@ -57,5 +61,6 @@ namespace Nop.Plugin.Shipping.ByTotal.Models
         public IList<SelectListItem> AvailableStates { get; set; }
         public IList<SelectListItem> AvailableShippingMethods { get; set; }
         public IList<SelectListItem> AvailableStores { get; set; }
+        public IList<SelectListItem> AvailableWarehouses { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using Nop.Core;
 using Nop.Data;
+using Nop.Plugin.Shipping.ByTotal.Domain;
 
 namespace Nop.Plugin.Shipping.ByTotal.Data
 {
@@ -12,11 +13,17 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
     /// </summary>
     public class ShippingByTotalObjectContext : DbContext, IDbContext
     {
+        #region Ctor
+
         public ShippingByTotalObjectContext(string nameOrConnectionString)
             : base(nameOrConnectionString)
         {
 
         }
+
+        #endregion
+
+        #region Utilities
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -26,6 +33,10 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
             //modelBuilder.Conventions.Remove<IncludeMetadataConvention>();
             base.OnModelCreating(modelBuilder);
         }
+
+        #endregion
+
+        #region Methods
 
         public string CreateDatabaseScript()
         {
@@ -42,7 +53,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         /// </summary>
         public void Install()
         {
-            //create table
+            // create table
             var dbScript = CreateDatabaseScript();
             Database.ExecuteSqlCommand(dbScript);
             SaveChanges();
@@ -53,8 +64,9 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         /// </summary>
         public void Uninstall()
         {
-            //drop table
-            this.DropPluginTable("ShippingByTotal");
+            // drop table
+            var tableName = this.GetTableName<ShippingByTotalRecord>();
+            this.DropPluginTable(tableName);
         }
 
         public IList<TEntity> ExecuteStoredProcedureList<TEntity>(string commandText, params object[] parameters) where TEntity : BaseEntity, new()
@@ -86,5 +98,51 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Detach an entity
+        /// </summary>
+        /// <param name="entity">Entity</param>
+        public void Detach(object entity)
+        {
+            if (entity == null)
+            {
+                throw new ArgumentNullException("entity");
+            }
+
+            ((IObjectContextAdapter)this).ObjectContext.Detach(entity);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether proxy creation setting is enabled (used in EF)
+        /// </summary>
+        public virtual bool ProxyCreationEnabled
+        {
+            get
+            {
+                return this.Configuration.ProxyCreationEnabled;
+            }
+            set
+            {
+                this.Configuration.ProxyCreationEnabled = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether auto detect changes setting is enabled (used in EF)
+        /// </summary>
+        public virtual bool AutoDetectChangesEnabled
+        {
+            get
+            {
+                return this.Configuration.AutoDetectChangesEnabled;
+            }
+            set
+            {
+                this.Configuration.AutoDetectChangesEnabled = value;
+            }
+        }
+
+        #endregion
     }
 }

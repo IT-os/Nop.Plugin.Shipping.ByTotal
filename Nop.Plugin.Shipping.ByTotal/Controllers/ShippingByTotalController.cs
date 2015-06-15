@@ -15,6 +15,7 @@ using Nop.Services.Stores;
 using Nop.Web.Framework.Controllers;
 using Nop.Web.Framework.Kendoui;
 using Nop.Web.Framework.Mvc;
+using Nop.Web.Framework.Security;
 
 namespace Nop.Plugin.Shipping.ByTotal.Controllers
 {
@@ -84,6 +85,13 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                 model.AvailableStores.Add(new SelectListItem() { Text = store.Name, Value = store.Id.ToString() });
             }
 
+            // warehouses
+            model.AvailableWarehouses.Add(new SelectListItem() { Text = "*", Value = "0" });
+            foreach (var warehouse in _shippingService.GetAllWarehouses())
+            {
+                model.AvailableWarehouses.Add(new SelectListItem() { Text = warehouse.Name, Value = warehouse.Id.ToString() });
+            }
+
             // shipping methods
             foreach (var sm in shippingMethods)
             {
@@ -105,7 +113,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return View("~/Plugins/Shipping.ByTotal/Views/ShippingByTotal/Configure.cshtml", model);
         }
 
-        [HttpPost]
+        [HttpPost, AdminAntiForgery]
         public ActionResult RatesList(DataSourceRequest command)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
@@ -120,6 +128,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                     {
                         Id = x.Id,
                         StoreId = x.StoreId,
+                        WarehouseId = x.WarehouseId,
                         ShippingMethodId = x.ShippingMethodId,
                         CountryId = x.CountryId,
                         DisplayOrder = x.DisplayOrder,
@@ -137,6 +146,10 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                     // store
                     var store = _storeService.GetStoreById(x.StoreId);
                     m.StoreName = (store != null) ? store.Name : "*";
+
+                    // warehouse
+                    var warehouse = _shippingService.GetWarehouseById(x.WarehouseId);
+                    m.WarehouseName = (warehouse != null) ? warehouse.Name : "*";
 
                     // country
                     var c = _countryService.GetCountryById(x.CountryId);
@@ -163,18 +176,13 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return Json(gridModel);
         }
 
-        [HttpPost]
+        [HttpPost, AdminAntiForgery]
         public ActionResult RateUpdate(ShippingByTotalModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
             {
                 return Content(_localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied"));
             }
-
-            //if (!ModelState.IsValid)
-            //{
-            //    return new JsonResult { Data = "error" };
-            //}
 
             var shippingByTotalRecord = _shippingByTotalService.GetShippingByTotalRecordById(model.Id);
             shippingByTotalRecord.ZipPostalCode = model.ZipPostalCode == "*" ? null : model.ZipPostalCode;
@@ -186,6 +194,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             shippingByTotalRecord.ShippingChargeAmount = !model.UsePercentage ? model.ShippingChargeAmount : 0;
             shippingByTotalRecord.ShippingMethodId = model.ShippingMethodId;
             shippingByTotalRecord.StoreId = model.StoreId;
+            shippingByTotalRecord.WarehouseId = model.WarehouseId;
             shippingByTotalRecord.StateProvinceId = model.StateProvinceId;
             shippingByTotalRecord.CountryId = model.CountryId;
             _shippingByTotalService.UpdateShippingByTotalRecord(shippingByTotalRecord);
@@ -193,7 +202,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return new NullJsonResult();
         }
 
-        [HttpPost]
+        [HttpPost, AdminAntiForgery]
         public ActionResult RateDelete(int id)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
@@ -209,7 +218,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return new NullJsonResult();
         }
 
-        [HttpPost]
+        [HttpPost, AdminAntiForgery]
         public ActionResult AddShippingRate(ShippingByTotalListModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
@@ -233,6 +242,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             {
                 ShippingMethodId = model.AddShippingMethodId,
                 StoreId = model.AddStoreId,
+                WarehouseId = model.AddWarehouseId,
                 CountryId = model.AddCountryId,
                 StateProvinceId = model.AddStateProvinceId,
                 ZipPostalCode = zipPostalCode,
@@ -248,7 +258,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return Json(new { Result = true });
         }
 
-        [HttpPost]
+        [HttpPost, AdminAntiForgery]
         public ActionResult SaveGeneralSettings(ShippingByTotalListModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))

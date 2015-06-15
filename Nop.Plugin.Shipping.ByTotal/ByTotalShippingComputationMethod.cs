@@ -96,17 +96,19 @@ namespace Nop.Plugin.Shipping.ByTotal
         /// <summary>
         /// Gets the rate for the shipping method
         /// </summary>
-        /// <param name="subtotal">the order's subtotal</param>
-        /// <param name="shippingMethodId">the shipping method identifier</param>
-        /// <param name="countryId">country identifier</param>
-        /// <param name="stateProvinceId">state province identifier</param>
+        /// <param name="subtotal">The order's subtotal</param>
+        /// <param name="shippingMethodId">The shipping method identifier</param>
+        /// <param name="storeId">Store identifier</param>
+        /// <param name="warehouseId">Warehouse identifier</param>
+        /// <param name="countryId">Country identifier</param>
+        /// <param name="stateProvinceId">State / province identifier</param>
         /// <param name="zipPostalCode">ZIP / postal code</param>
         /// <returns>the rate for the shipping method</returns>
-        private decimal? GetRate(decimal subtotal, int shippingMethodId, int storeId, int countryId, int stateProvinceId, string zipPostalCode)
+        private decimal? GetRate(decimal subtotal, int shippingMethodId, int storeId, int warehouseId, int countryId, int stateProvinceId, string zipPostalCode)
         {
             decimal? shippingTotal = null;
 
-            var shippingByTotalRecord = _shippingByTotalService.FindShippingByTotalRecord(shippingMethodId, storeId, countryId, subtotal, stateProvinceId, zipPostalCode);
+            var shippingByTotalRecord = _shippingByTotalService.FindShippingByTotalRecord(shippingMethodId, storeId, warehouseId, countryId, subtotal, stateProvinceId, zipPostalCode);
 
             if (shippingByTotalRecord == null)
             {
@@ -174,9 +176,14 @@ namespace Nop.Plugin.Shipping.ByTotal
                 return response;
             }
 
-            var storeId = _storeContext.CurrentStore.Id;
+            var storeId = getShippingOptionRequest.StoreId;
+            if (storeId == 0)
+            {
+                storeId = _storeContext.CurrentStore.Id;
+            }
             int countryId = getShippingOptionRequest.ShippingAddress.CountryId.HasValue ? getShippingOptionRequest.ShippingAddress.CountryId.Value : 0;
             int stateProvinceId = getShippingOptionRequest.ShippingAddress.StateProvinceId.HasValue ? getShippingOptionRequest.ShippingAddress.StateProvinceId.Value : 0;
+            var warehouseId = getShippingOptionRequest.WarehouseFrom != null ? getShippingOptionRequest.WarehouseFrom.Id : 0;
             string zipPostalCode = getShippingOptionRequest.ShippingAddress.ZipPostalCode;
             decimal subTotal = decimal.Zero;
             foreach (var packageItem in getShippingOptionRequest.Items)
@@ -191,7 +198,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             var shippingMethods = _shippingService.GetAllShippingMethods(countryId);
             foreach (var shippingMethod in shippingMethods)
             {
-                decimal? rate = GetRate(subTotal, shippingMethod.Id, storeId, countryId, stateProvinceId, zipPostalCode);
+                decimal? rate = GetRate(subTotal, shippingMethod.Id, storeId, warehouseId, countryId, stateProvinceId, zipPostalCode);
                 if (rate.HasValue)
                 {
                     var shippingOption = new ShippingOption();
@@ -264,6 +271,8 @@ namespace Nop.Plugin.Shipping.ByTotal
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To.Hint", "Order total to.");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage", "Use percentage");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage.Hint", "Check to use 'charge percentage' value.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Warehouse", "Warehouse");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Warehouse.Hint", "This shipping rate will apply to all warehouses if an asterisk is selected.");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ZipPostalCode", "ZIP / postal code");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ZipPostalCode.Hint", "If ZIP / postal code is empty, this shipping rate will apply to all customers from the given country or state / province, regardless of the ZIP / postal code. The ZIP / postal codes can be entered in multiple formats: single (11111), multiple comma separated (11111, 22222), wildcard characters (S4? ???), starts with wildcard (S4*), numeric ranges (10000:30000), or combinations of the preceding formats (11111, 100??, 11111:22222, 33333).");
             this.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied", "Access denied");
@@ -310,6 +319,8 @@ namespace Nop.Plugin.Shipping.ByTotal
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To.Hint");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage.Hint");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Warehouse");
+            this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Warehouse.Hint");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ZipPostalCode");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ZipPostalCode.Hint");
             this.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied");

@@ -21,17 +21,20 @@
                                 destroy: {
                                     url: "@Html.Raw(Url.Action("RateDelete", "ShippingByTotal", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Shipping.ByTotal.Controllers" }, { "area", "" } }))",
                                     type: "POST",
-                                    dataType: "json"
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
                                 },
                                 read: {
                                     url: "@Html.Raw(Url.Action("RatesList", "ShippingByTotal", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Shipping.ByTotal.Controllers" }, { "area", "" } }))",
                                     type: "POST",
-                                    dataType: "json"
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
                                 },
                                 update: {
                                     url: "@Html.Raw(Url.Action("RateUpdate", "ShippingByTotal", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Shipping.ByTotal.Controllers" }, { "area", "" } }))",
                                     type: "POST",
-                                    dataType: "json"
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
                                 }
                             },schema: {
                                 data: "Data",
@@ -75,19 +78,25 @@
                         columns: [{
                             field: "StoreId",
                             title: "@T("Plugins.Shipping.ByTotal.Fields.Store")",
-                            width: 250,
+                            width: 200,
                             editor: storesDropDownEditor,
                             template: "#=StoreName#"
                         }, {
+                            field: "WarehouseId",
+                            title: "@T("Plugins.Shipping.ByTotal.Fields.Warehouse")",
+                            width: 200,
+                            editor: warehouseDropDownEditor,
+                            template: "#=WarehouseName#"
+                        }, {
                             field: "CountryId",
                             title: "@T("Plugins.Shipping.ByTotal.Fields.Country")",
-                            width: 250,
+                            width: 200,
                             editor: countriesDropDownEditor,
                             template: "#=CountryName#"
                         }, {
                             field: "StateProvinceId",
                             title: "@T("Plugins.Shipping.ByTotal.Fields.StateProvince")",
-                            width: 250,
+                            width: 200,
                             editor: statesProvincesDropDownEditor,
                             template: "#=StateProvinceName#"
                         }, {
@@ -208,6 +217,23 @@
      }
     ];
 
+    @* available warehouses for inline editing *@
+    var warehouses = [
+     @for (int i = 0; i < Model.AvailableWarehouses.Count; i++)
+     {
+         var warehouse = Model.AvailableWarehouses[i];
+         <text>
+        {
+            WarehouseId: @warehouse.Value,
+            WarehouseName: "@(warehouse.Text)"
+        }</text>
+        if (i != Model.AvailableWarehouses.Count - 1)
+        {
+            <text>,</text>
+        }
+     }
+    ];
+
     @* available countries for inline editing *@
     var countries = [
      @for (int i = 0; i < Model.AvailableCountries.Count; i++)
@@ -260,6 +286,29 @@
                             fields: {
                                 StoreId: { type: "string" },
                                 StoreName: { type: "string" },
+                            }
+                        }
+                    },
+                    error: function (e) {
+                        display_kendoui_grid_error(e);
+                        this.cancelChanges();
+                    }
+                },
+            });
+    }
+
+    function warehouseDropDownEditor(container, options) {
+        $('<input required data-text-field="WarehouseName" data-value-field="WarehouseId" data-bind="value:' + options.field + '"/>')
+            .appendTo(container)
+            .kendoDropDownList({
+                autoBind: false,
+                dataSource: {
+                    data: warehouses,
+                    schema: {
+                        model: {
+                            fields: {
+                                WarehouseId: { type: "string" },
+                                WarehouseName: { type: "string" },
                             }
                         }
                     },
@@ -341,6 +390,7 @@
 </script>
 @using (Html.BeginForm())
 {
+    @Html.AntiForgeryToken()
     <script type="text/javascript">
         $(function () {
             $("#@Html.FieldIdFor(model => model.AddUsePercentage)").click(toggleAddUsePercentage);
@@ -383,11 +433,13 @@
 
         $(function () {
             $('#savegeneralsettings').click(function () {
+                var postData = $(this.form).serialize();
+                addAntiForgeryToken(postData);
                 $.ajax({
                     cache: false,
                     type: 'POST',
                     url: '@Url.RouteUrl("Plugin.Shipping.ByTotal.SaveGeneralSettings")',
-                    data: $(this.form).serialize(),
+                    data: postData,
                     dataType: 'json',
                     success: function (data) {
                         alert(data.Message);
@@ -417,6 +469,15 @@
                 <td class="adminData">
                     @Html.DropDownListFor(model => model.AddStoreId, Model.AvailableStores)
                     @Html.ValidationMessageFor(model => model.AddStoreId)
+                </td>
+            </tr>
+            <tr>
+                <td class="adminTitle">
+                    @Html.NopLabelFor(model => model.AddWarehouseId):
+                </td>
+                <td class="adminData">
+                    @Html.DropDownListFor(model => model.AddWarehouseId, Model.AvailableWarehouses)
+                    @Html.ValidationMessageFor(model => model.AddWarehouseId)
                 </td>
             </tr>
             <tr>

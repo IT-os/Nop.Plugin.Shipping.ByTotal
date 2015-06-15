@@ -86,15 +86,16 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <summary>
         /// Finds the ShippingByTotalRecord
         /// </summary>
-        /// <param name="shippingMethodId">shipping method identifier</param>
-        /// <param name="storeId">store identifier</param>
-        /// <param name="subtotal">order's subtotal</param>
-        /// <param name="countryId">country identifier</param>
-        /// <param name="subtotal">subtotal</param>
-        /// <param name="stateProvinceId">state province identifier</param>
+        /// <param name="shippingMethodId">Shipping method identifier</param>
+        /// <param name="storeId">Store identifier</param>
+        /// <param name="warehouseId">Warehouse identifier</param>
+        /// <param name="subtotal">Order's subtotal</param>
+        /// <param name="countryId">Country identifier</param>
+        /// <param name="subtotal">Subtotal</param>
+        /// <param name="stateProvinceId">State / province identifier</param>
         /// <param name="zipPostalCode">ZIP / postal code</param>
         /// <returns>ShippingByTotalRecord</returns>
-        public virtual ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int storeId,
+        public virtual ShippingByTotalRecord FindShippingByTotalRecord(int shippingMethodId, int storeId, int warehouseId,
             int countryId, decimal subtotal, int stateProvinceId, string zipPostalCode)
         {
             if (zipPostalCode == null)
@@ -131,9 +132,30 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
                 }
             }
 
+            // filter by warehouse
+            var matchedByWarehouse = new List<ShippingByTotalRecord>();
+            foreach (var sbtr in matchedByStore)
+            {
+                if (warehouseId == sbtr.WarehouseId)
+                {
+                    matchedByWarehouse.Add(sbtr);
+                }
+            }
+
+            if (matchedByWarehouse.Count == 0)
+            {
+                foreach (var sbtr in matchedByStore)
+                {
+                    if (sbtr.WarehouseId == 0)
+                    {
+                        matchedByWarehouse.Add(sbtr);
+                    }
+                }
+            }
+
             // filter by country
             var matchedByCountry = new List<ShippingByTotalRecord>();
-            foreach (var sbtr in matchedByStore)
+            foreach (var sbtr in matchedByWarehouse)
             {
                 if (countryId == sbtr.CountryId)
                 {
@@ -142,7 +164,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             }
             if (matchedByCountry.Count == 0)
             {
-                foreach (var sbtr in matchedByStore)
+                foreach (var sbtr in matchedByWarehouse)
                 {
                     if (sbtr.CountryId == 0)
                     {

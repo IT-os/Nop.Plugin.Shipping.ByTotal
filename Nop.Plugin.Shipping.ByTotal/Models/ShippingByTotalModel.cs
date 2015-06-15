@@ -11,6 +11,12 @@ namespace Nop.Plugin.Shipping.ByTotal.Models
         [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Store")]
         public string StoreName { get; set; }
 
+        [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Warehouse")]
+        public int WarehouseId { get; set; }
+
+        [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Warehouse")]
+        public string WarehouseName { get; set; }
+
         [NopResourceDisplayName("Plugins.Shipping.ByTotal.Fields.Country")]
         public int CountryId { get; set; }
 
