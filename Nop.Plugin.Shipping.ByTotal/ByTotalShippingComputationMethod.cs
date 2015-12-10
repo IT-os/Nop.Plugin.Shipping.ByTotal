@@ -30,7 +30,7 @@ namespace Nop.Plugin.Shipping.ByTotal
         // same value as set in ShippingByTotalRecordMap
         public const int ZipPostalCodeMaxLength = 400;
 
-        #endregion
+        #endregion Fields
 
         #region Ctor
 
@@ -63,7 +63,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             this._settingService = settingService;
         }
 
-        #endregion
+        #endregion Ctor
 
         #region Properties
 
@@ -89,7 +89,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Utilities
 
@@ -147,7 +147,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             return shippingTotal;
         }
 
-        #endregion
+        #endregion Utilities
 
         #region Methods
 
@@ -333,6 +333,6 @@ namespace Nop.Plugin.Shipping.ByTotal
             base.Uninstall();
         }
 
-        #endregion
+        #endregion Methods
     }
 }

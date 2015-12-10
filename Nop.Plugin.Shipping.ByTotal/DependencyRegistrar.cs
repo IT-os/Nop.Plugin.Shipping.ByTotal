@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Core;
+using Nop.Core.Configuration;
 using Nop.Core.Data;
 using Nop.Core.Infrastructure;
 using Nop.Core.Infrastructure.DependencyManagement;
@@ -13,7 +14,7 @@ namespace Nop.Plugin.Shipping.ByTotal
 {
     public class DependencyRegistrar : IDependencyRegistrar
     {
-        public virtual void Register(ContainerBuilder builder, ITypeFinder typeFinder)
+        public virtual void Register(ContainerBuilder builder, ITypeFinder typeFinderr, NopConfig config)
         {
             builder.RegisterType<ShippingByTotalService>().As<IShippingByTotalService>().InstancePerRequest();
 

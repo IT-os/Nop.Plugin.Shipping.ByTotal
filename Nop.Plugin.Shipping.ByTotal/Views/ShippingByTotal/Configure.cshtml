@@ -108,7 +108,7 @@
                             title: "@T("Plugins.Shipping.ByTotal.Fields.DisplayOrder")",
                             width: 100,
                             editor: function (container, options) {
-                                $('<input name="' + options.field + '"/>')
+                                $('<input name="' + options.field + '" />')
                                         .appendTo(container)
                                         .kendoNumericTextBox({
                                             format: "{0:n0}",
@@ -134,7 +134,7 @@
                             title: "@T("Plugins.Shipping.ByTotal.Fields.UsePercentage")",
                             width: 100,
                             attributes: { style: "text-align:center" },
-                            template: "<input type='checkbox' disabled='disabled' name='UsePercentage' # if(UsePercentage) {# checked='checked' #}  #/>"
+                            template: "<input type='checkbox' disabled='disabled' name='UsePercentage' # if(UsePercentage) {# checked='checked' #}  # />"
                         }, {
                             field: "ShippingChargePercentage",
                             title: "@T("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage")",
@@ -252,7 +252,7 @@
     ];
 
     function shippingMethodsDropDownEditor(container, options) {
-        $('<input required data-text-field="ShippingMethodName" data-value-field="ShippingMethodId" data-bind="value:' + options.field + '"/>')
+        $('<input required data-text-field="ShippingMethodName" data-value-field="ShippingMethodId" data-bind="value:' + options.field + '" />')
             .appendTo(container)
             .kendoDropDownList({
                 autoBind: false,
@@ -275,7 +275,7 @@
     }
 
     function storesDropDownEditor(container, options) {
-        $('<input required data-text-field="StoreName" data-value-field="StoreId" data-bind="value:' + options.field + '"/>')
+        $('<input required data-text-field="StoreName" data-value-field="StoreId" data-bind="value:' + options.field + '" />')
             .appendTo(container)
             .kendoDropDownList({
                 autoBind: false,
@@ -298,7 +298,7 @@
     }
 
     function warehouseDropDownEditor(container, options) {
-        $('<input required data-text-field="WarehouseName" data-value-field="WarehouseId" data-bind="value:' + options.field + '"/>')
+        $('<input required data-text-field="WarehouseName" data-value-field="WarehouseId" data-bind="value:' + options.field + '" />')
             .appendTo(container)
             .kendoDropDownList({
                 autoBind: false,
@@ -321,7 +321,7 @@
     }
 
     function countriesDropDownEditor(container, options) {
-        $('<input required data-text-field="CountryName" data-value-field="CountryId" data-bind="value:' + options.field + '"/>')
+        $('<input required data-text-field="CountryName" data-value-field="CountryId" data-bind="value:' + options.field + '" />')
             .appendTo(container)
             .kendoDropDownList({
                 autoBind: false,
@@ -349,7 +349,7 @@
     }
 
     function statesProvincesDropDownEditor(container, options) {
-        $('<input required data-text-field="StateProvinceName" data-value-field="StateProvinceId" data-bind="value:' + options.field + '"/>')
+        $('<input required data-text-field="StateProvinceName" data-value-field="StateProvinceId" data-bind="value:' + options.field + '" />')
             .appendTo(container)
             .kendoDropDownList({
                 autoBind: false,

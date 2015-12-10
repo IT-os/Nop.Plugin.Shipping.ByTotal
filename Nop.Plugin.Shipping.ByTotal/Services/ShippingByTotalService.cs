@@ -18,14 +18,14 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         private const string SHIPPINGBYTOTAL_ALL_KEY = "Nop.shippingbytotal.all";
         private const string SHIPPINGBYTOTAL_PATTERN_KEY = "Nop.shippingbytotal.";
 
-        #endregion
+        #endregion Constants
 
         #region Fields
 
         private readonly IRepository<ShippingByTotalRecord> _sbtRepository;
         private readonly ICacheManager _cacheManager;
 
-        #endregion
+        #endregion Fields
 
         #region Ctor
 
@@ -41,7 +41,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             this._sbtRepository = sbtRepository;
         }
 
-        #endregion
+        #endregion Ctor
 
         #region Methods
 
@@ -407,6 +407,6 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             _cacheManager.RemoveByPattern(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
-        #endregion
+        #endregion Methods
     }
 }

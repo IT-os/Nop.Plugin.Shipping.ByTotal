@@ -100,7 +100,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
 
             // countries
             model.AvailableCountries.Add(new SelectListItem() { Text = "*", Value = "0" });
-            var countries = _countryService.GetAllCountries(true);
+            var countries = _countryService.GetAllCountries(showHidden: true);
             foreach (var c in countries)
             {
                 model.AvailableCountries.Add(new SelectListItem() { Text = c.Name, Value = c.Id.ToString() });

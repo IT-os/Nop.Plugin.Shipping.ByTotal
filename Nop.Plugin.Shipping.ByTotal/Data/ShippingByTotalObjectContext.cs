@@ -18,10 +18,9 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         public ShippingByTotalObjectContext(string nameOrConnectionString)
             : base(nameOrConnectionString)
         {
-
         }
 
-        #endregion
+        #endregion Ctor
 
         #region Utilities
 
@@ -34,7 +33,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
             base.OnModelCreating(modelBuilder);
         }
 
-        #endregion
+        #endregion Utilities
 
         #region Methods
 
@@ -143,6 +142,6 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
             }
         }
 
-        #endregion
+        #endregion Methods
     }
 }
