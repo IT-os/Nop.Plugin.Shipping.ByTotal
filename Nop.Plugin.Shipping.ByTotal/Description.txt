@@ -1,9 +1,9 @@
 ﻿Group: Shipping rate computation
 FriendlyName: Shipping by total
 SystemName: Shipping.ByTotal
-Version: 1.22
-SupportedVersions: 3.80
+Version: 1.23
+SupportedVersions: 3.90
 Author: mb
 DisplayOrder: 1
 FileName: Nop.Plugin.Shipping.ByTotal.dll
-Description:
+Description: This plugin is a shipping rate computation method that provides shipping rates based on an order's subtotal.

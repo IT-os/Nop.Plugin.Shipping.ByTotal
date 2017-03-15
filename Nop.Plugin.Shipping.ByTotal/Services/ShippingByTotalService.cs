@@ -367,7 +367,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         {
             if (shippingByTotalRecord == null)
             {
-                throw new ArgumentNullException("shippingByTotalRecord");
+                throw new ArgumentNullException(nameof(shippingByTotalRecord));
             }
 
             _sbtRepository.Delete(shippingByTotalRecord);
@@ -383,7 +383,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         {
             if (shippingByTotalRecord == null)
             {
-                throw new ArgumentNullException("shippingByTotalRecord");
+                throw new ArgumentNullException(nameof(shippingByTotalRecord));
             }
 
             _sbtRepository.Insert(shippingByTotalRecord);
@@ -399,7 +399,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         {
             if (shippingByTotalRecord == null)
             {
-                throw new ArgumentNullException("shippingByTotalRecord");
+                throw new ArgumentNullException(nameof(shippingByTotalRecord));
             }
 
             _sbtRepository.Update(shippingByTotalRecord);

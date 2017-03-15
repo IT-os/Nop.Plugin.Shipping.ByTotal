@@ -91,31 +91,31 @@
                     columns: [{
                         field: "StoreId",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.Store")",
-                        width: 200,
+                        width: 100,
                         editor: storesDropDownEditor,
                         template: "#=StoreName#"
                     }, {
                         field: "WarehouseId",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.Warehouse")",
-                        width: 200,
+                        width: 100,
                         editor: warehouseDropDownEditor,
                         template: "#=WarehouseName#"
                     }, {
                         field: "CountryId",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.Country")",
-                        width: 200,
+                        width: 100,
                         editor: countriesDropDownEditor,
                         template: "#=CountryName#"
                     }, {
                         field: "StateProvinceId",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.StateProvince")",
-                        width: 200,
+                        width: 100,
                         editor: statesProvincesDropDownEditor,
                         template: "#=StateProvinceName#"
                     }, {
                         field: "ZipPostalCode",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.ZipPostalCode")",
-                        width: 200
+                        width: 100
                     }, {
                         field: "DisplayOrder",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.DisplayOrder")",
@@ -131,17 +131,17 @@
                     }, {
                         field: "ShippingMethodId",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.ShippingMethod")",
-                        width: 200,
+                        width: 100,
                         editor: shippingMethodsDropDownEditor,
                         template: "#=ShippingMethodName#"
                     }, {
                         field: "From",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.From")",
-                        width: 150
+                        width: 100
                     }, {
                         field: "To",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.To")",
-                        width: 150
+                        width: 100
                     }, {
                         field: "UsePercentage",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.UsePercentage")",
@@ -151,15 +151,15 @@
                     }, {
                         field: "ShippingChargePercentage",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage")",
-                        width: 200
+                        width: 100
                     }, {
                         field: "ShippingChargeAmount",
                         title: "@T("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount")",
-                        width: 150
+                        width: 100
                     }, {
                         command: {name: "edit", text: "@T("Admin.Common.Edit")"},
                         title: "@T("Admin.Common.Edit")",
-                        width: 150
+                        width: 100
                     }, {
                         command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
                         title: "@T("Admin.Common.Delete")",
@@ -545,7 +545,7 @@
                     @Html.NopLabelFor(model => model.AddFrom)
                 </div>
                 <div class="col-md-9">
-                    @Html.EditorFor(model => model.AddFrom) [@Model.PrimaryStoreCurrencyCode]
+                    @Html.NopEditorFor(model => model.AddFrom, Model.PrimaryStoreCurrencyCode)
                     @Html.ValidationMessageFor(model => model.AddFrom)
                 </div>
             </div>
@@ -555,7 +555,7 @@
                     @Html.NopLabelFor(model => model.AddTo)
                 </div>
                 <div class="col-md-9">
-                    @Html.EditorFor(model => model.AddTo) [@Model.PrimaryStoreCurrencyCode]
+                    @Html.NopEditorFor(model => model.AddTo, Model.PrimaryStoreCurrencyCode)
                     @Html.ValidationMessageFor(model => model.AddTo)
                 </div>
             </div>
@@ -585,7 +585,7 @@
                     @Html.NopLabelFor(model => model.AddShippingChargeAmount)
                 </div>
                 <div class="col-md-9">
-                    @Html.EditorFor(model => model.AddShippingChargeAmount) [@Model.PrimaryStoreCurrencyCode]
+                    @Html.NopEditorFor(model => model.AddShippingChargeAmount, Model.PrimaryStoreCurrencyCode)
                     @Html.ValidationMessageFor(model => model.AddShippingChargeAmount)
                 </div>
             </div>

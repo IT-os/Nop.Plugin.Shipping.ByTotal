@@ -110,7 +110,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             model.LimitMethodsToCreated = _shippingByTotalSettings.LimitMethodsToCreated;
             model.PrimaryStoreCurrencyCode = _currencyService.GetCurrencyById(_currencySettings.PrimaryStoreCurrencyId).CurrencyCode;
 
-            return View("~/Plugins/Shipping.ByTotal/Views/ShippingByTotal/Configure.cshtml", model);
+            return View("~/Plugins/Shipping.ByTotal/Views/Configure.cshtml", model);
         }
 
         [HttpPost, AdminAntiForgery]

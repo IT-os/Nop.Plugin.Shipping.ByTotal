@@ -106,7 +106,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         {
             if (entity == null)
             {
-                throw new ArgumentNullException("entity");
+                throw new ArgumentNullException(nameof(entity));
             }
 
             ((IObjectContextAdapter)this).ObjectContext.Detach(entity);

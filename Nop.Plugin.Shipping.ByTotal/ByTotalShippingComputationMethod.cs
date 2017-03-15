@@ -1,6 +1,4 @@
-﻿using System;
-using System.Web.Routing;
-using Nop.Core;
+﻿using Nop.Core;
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Plugins;
 using Nop.Plugin.Shipping.ByTotal.Data;
@@ -11,6 +9,8 @@ using Nop.Services.Localization;
 using Nop.Services.Logging;
 using Nop.Services.Shipping;
 using Nop.Services.Shipping.Tracking;
+using System;
+using System.Web.Routing;
 
 namespace Nop.Plugin.Shipping.ByTotal
 {
@@ -160,12 +160,12 @@ namespace Nop.Plugin.Shipping.ByTotal
         {
             if (getShippingOptionRequest == null)
             {
-                throw new ArgumentNullException("getShippingOptionRequest");
+                throw new ArgumentNullException(nameof(getShippingOptionRequest));
             }
 
             var response = new GetShippingOptionResponse();
 
-            if (getShippingOptionRequest.Items == null || getShippingOptionRequest.Items.Count == 0)
+            if (getShippingOptionRequest.Items?.Count == 0)
             {
                 response.AddError("No shipment items");
                 return response;
@@ -217,10 +217,7 @@ namespace Nop.Plugin.Shipping.ByTotal
         /// </summary>
         /// <param name="getShippingOptionRequest">A request for getting shipping options</param>
         /// <returns>Fixed shipping rate; or null in case there's no fixed shipping rate</returns>
-        public decimal? GetFixedRate(GetShippingOptionRequest getShippingOptionRequest)
-        {
-            return null;
-        }
+        public decimal? GetFixedRate(GetShippingOptionRequest getShippingOptionRequest) => null;
 
         /// <summary>
         /// Gets a route for provider configuration
@@ -284,7 +281,7 @@ namespace Nop.Plugin.Shipping.ByTotal
 
             base.Install();
 
-            _logger.Information(string.Format("Plugin installed: SystemName: {0}, Version: {1}, Description: '{2}'", PluginDescriptor.SystemName, PluginDescriptor.Version, PluginDescriptor.FriendlyName));
+            _logger.Information($"Plugin installed: SystemName: {PluginDescriptor.SystemName}, Version: {PluginDescriptor.Version}, Description: '{PluginDescriptor.FriendlyName}'");
         }
 
         /// <summary>
