@@ -90,9 +90,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <param name="shippingMethodId">Shipping method identifier</param>
         /// <param name="storeId">Store identifier</param>
         /// <param name="warehouseId">Warehouse identifier</param>
-        /// <param name="subtotal">Order's subtotal</param>
         /// <param name="countryId">Country identifier</param>
-        /// <param name="subtotal">Subtotal</param>
+        /// <param name="subtotal">Order's subtotal</param>
         /// <param name="stateProvinceId">State / province identifier</param>
         /// <param name="zipPostalCode">ZIP / postal code</param>
         /// <returns>ShippingByTotalRecord</returns>
