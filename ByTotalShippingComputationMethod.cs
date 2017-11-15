@@ -63,17 +63,18 @@ namespace Nop.Plugin.Shipping.ByTotal
             ShippingByTotalSettings shippingByTotalSettings,
             IWebHelper webHelper)
         {
-            this._logger = logger;
-            this._priceCalculationService = priceCalculationService;
-            this._productAttributeParser = productAttributeParser;
-            this._objectContext = objectContext;
-            this._priceCalculationService = priceCalculationService;
-            this._settingService = settingService;
-            this._shippingByTotalService = shippingByTotalService;
-            this._shippingByTotalSettings = shippingByTotalSettings;
-            this._shippingService = shippingService;
-            this._storeContext = storeContext;
-            this._webHelper = webHelper;
+            _logger = logger;
+            _priceCalculationService = priceCalculationService;
+            _productAttributeParser = productAttributeParser;
+            _productService = productService;
+            _objectContext = objectContext;
+            _priceCalculationService = priceCalculationService;
+            _settingService = settingService;
+            _shippingByTotalService = shippingByTotalService;
+            _shippingByTotalSettings = shippingByTotalSettings;
+            _shippingService = shippingService;
+            _storeContext = storeContext;
+            _webHelper = webHelper;
         }
 
         #endregion Ctor

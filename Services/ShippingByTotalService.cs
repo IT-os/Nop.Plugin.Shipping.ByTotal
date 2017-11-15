@@ -38,8 +38,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         public ShippingByTotalService(ICacheManager cacheManager,
             IRepository<ShippingByTotalRecord> sbtRepository)
         {
-            this._cacheManager = cacheManager;
-            this._sbtRepository = sbtRepository;
+            _cacheManager = cacheManager;
+            _sbtRepository = sbtRepository;
         }
 
         #endregion Ctor

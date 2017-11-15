@@ -55,17 +55,17 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             IStoreService storeService,
             ShippingByTotalSettings shippingByTotalSettings)
         {
-            this._countryService = countryService;
-            this._currencyService = currencyService;
-            this._currencySettings = currencySettings;
-            this._localizationService = localizationService;
-            this._permissionService = permissionService;
-            this._settingService = settingService;
-            this._shippingByTotalService = shippingByTotalService;
-            this._shippingByTotalSettings = shippingByTotalSettings;
-            this._shippingService = shippingService;
-            this._stateProvinceService = stateProvinceService;
-            this._storeService = storeService;
+            _countryService = countryService;
+            _currencyService = currencyService;
+            _currencySettings = currencySettings;
+            _localizationService = localizationService;
+            _permissionService = permissionService;
+            _settingService = settingService;
+            _shippingByTotalService = shippingByTotalService;
+            _shippingByTotalSettings = shippingByTotalSettings;
+            _shippingService = shippingService;
+            _stateProvinceService = stateProvinceService;
+            _storeService = storeService;
         }
 
         #endregion Ctor
