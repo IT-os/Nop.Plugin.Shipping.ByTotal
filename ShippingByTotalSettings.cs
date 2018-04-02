@@ -8,7 +8,8 @@ namespace Nop.Plugin.Shipping.ByTotal
     public class ShippingByTotalSettings : ISettings
     {
         /// <summary>
-        /// Wether returned shipping methods are limited to configured ones (if set to false, returns zero for unconfigured shipping methods)
+        /// Whether returned shipping methods are limited to configured ones 
+        /// (if false, shipping methods that have not been configured will have a shipping cost of zero).
         /// </summary>
         public bool LimitMethodsToCreated { get; set; }
     }
