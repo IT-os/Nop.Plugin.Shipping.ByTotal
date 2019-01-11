@@ -9,7 +9,7 @@ namespace Nop.Plugin.Shipping.ByTotal.EventConsumers
     /// Event Consumer of ShippingMethod EntityDeleted Event
     /// </summary>
     /// <remarks>Used to remove ShippingByTotal records when their associated ShippingMethod is deleted.</remarks>
-    public class ShippingMethodDeletedEventConsumer : IConsumer<EntityDeleted<ShippingMethod>>
+    public class ShippingMethodDeletedEventConsumer : IConsumer<EntityDeletedEvent<ShippingMethod>>
     {
         #region Fields
 
@@ -25,7 +25,7 @@ namespace Nop.Plugin.Shipping.ByTotal.EventConsumers
 
         #region IConsumer Methods
 
-        public void HandleEvent(EntityDeleted<ShippingMethod> eventMessage)
+        public void HandleEvent(EntityDeletedEvent<ShippingMethod> eventMessage)
         {
             var shippingMethod = eventMessage?.Entity;
             if (shippingMethod == null)
@@ -33,7 +33,7 @@ namespace Nop.Plugin.Shipping.ByTotal.EventConsumers
                 return;
             }
 
-            //remove records that used the deleted ShippingMethod
+            // remove records that used the deleted ShippingMethod
             _shippingByTotalService.DeleteByShippingMethod(shippingMethod);
         }
 

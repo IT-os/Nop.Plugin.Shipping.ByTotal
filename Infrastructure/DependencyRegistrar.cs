@@ -8,7 +8,7 @@ using Nop.Data;
 using Nop.Plugin.Shipping.ByTotal.Data;
 using Nop.Plugin.Shipping.ByTotal.Domain;
 using Nop.Plugin.Shipping.ByTotal.Services;
-using Nop.Web.Framework.Infrastructure;
+using Nop.Web.Framework.Infrastructure.Extensions;
 
 namespace Nop.Plugin.Shipping.ByTotal.Infrastructure
 {
@@ -28,7 +28,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Infrastructure
             builder.RegisterType<ShippingByTotalService>().As<IShippingByTotalService>().InstancePerLifetimeScope();
 
             //data context
-            this.RegisterPluginDataContext<ShippingByTotalObjectContext>(builder, "nop_object_context_shipping_total");
+            builder.RegisterPluginDataContext<ShippingByTotalObjectContext>("nop_object_context_shipping_total");
 
             //override required repository with our custom context
             builder.RegisterType<EfRepository<ShippingByTotalRecord>>()

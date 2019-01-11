@@ -1,4 +1,6 @@
-﻿using Nop.Data.Mapping;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Nop.Data.Mapping;
 using Nop.Plugin.Shipping.ByTotal.Domain;
 
 namespace Nop.Plugin.Shipping.ByTotal.Data
@@ -9,14 +11,15 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
     public class ShippingByTotalRecordMap : NopEntityTypeConfiguration<ShippingByTotalRecord>
     {
         /// <summary>
-        /// Ctor
+        /// Configures the entity
         /// </summary>
-        public ShippingByTotalRecordMap()
+        /// <param name="builder">The builder to be used to configure the entity</param>
+        public override void Configure(EntityTypeBuilder<ShippingByTotalRecord> builder)
         {
-            this.ToTable("ShippingByTotal");
-            this.HasKey(x => x.Id);
+            builder.ToTable(nameof(ShippingByTotalRecord));
+            builder.HasKey(x => x.Id);
 
-            this.Property(x => x.ZipPostalCode).HasMaxLength(400);
+            builder.Property(x => x.ZipPostalCode).HasMaxLength(400);
         }
     }
 }

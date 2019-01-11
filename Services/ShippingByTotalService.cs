@@ -16,7 +16,11 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
     {
         #region Constants
 
-        private const string SHIPPINGBYTOTAL_ALL_KEY = "Nop.shippingbytotal.all";
+        /// <summary>
+        /// {0} - Page Index
+        /// {1} - Page Size
+        /// </summary>
+        private const string SHIPPINGBYTOTAL_ALL_KEY = "Nop.shippingbytotal.all-{0}-{1}";
         private const string SHIPPINGBYTOTAL_PATTERN_KEY = "Nop.shippingbytotal.";
 
         #endregion Constants
@@ -54,7 +58,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <returns>ShippingByTotalRecord collection</returns>
         public virtual IPagedList<ShippingByTotalRecord> GetAllShippingByTotalRecords(int pageIndex = 0, int pageSize = int.MaxValue)
         {
-            var key = SHIPPINGBYTOTAL_ALL_KEY;
+            var key = String.Format(SHIPPINGBYTOTAL_ALL_KEY, pageIndex, pageSize);
             return _cacheManager.Get(key, () =>
             {
                 var query = from sbt in _sbtRepository.Table

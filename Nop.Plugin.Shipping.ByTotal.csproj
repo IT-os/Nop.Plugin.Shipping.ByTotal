@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <Copyright>Copyright © mb</Copyright>
     <Company>mb</Company>
     <Authors>mb</Authors>
-    <Version>1.24</Version>
+    <Version>1.25</Version>
     <Description>This plugin provides shipping rates based on an order's subtotal.</Description>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl></PackageProjectUrl>

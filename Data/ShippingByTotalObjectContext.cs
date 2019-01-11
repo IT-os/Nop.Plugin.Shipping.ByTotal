@@ -1,10 +1,10 @@
-﻿using Nop.Core;
+﻿using Microsoft.EntityFrameworkCore;
+using Nop.Core;
 using Nop.Data;
+using Nop.Data.Extensions;
 using Nop.Plugin.Shipping.ByTotal.Domain;
 using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using System.Linq;
 
 namespace Nop.Plugin.Shipping.ByTotal.Data
 {
@@ -15,8 +15,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
     {
         #region Ctor
 
-        public ShippingByTotalObjectContext(string nameOrConnectionString)
-            : base(nameOrConnectionString)
+        public ShippingByTotalObjectContext(DbContextOptions<ShippingByTotalObjectContext> options)
+            : base(options)
         {
         }
 
@@ -24,12 +24,9 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
 
         #region Utilities
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Configurations.Add(new ShippingByTotalRecordMap());
-
-            //disable EdmMetadata generation
-            //modelBuilder.Conventions.Remove<IncludeMetadataConvention>();
+            modelBuilder.ApplyConfiguration(new ShippingByTotalRecordMap());
             base.OnModelCreating(modelBuilder);
         }
 
@@ -37,12 +34,12 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
 
         #region Methods
 
-        public string CreateDatabaseScript()
+        public virtual string GenerateCreateScript()
         {
-            return ((IObjectContextAdapter)this).ObjectContext.CreateDatabaseScript();
+            return this.Database.GenerateCreateScript();
         }
 
-        public new IDbSet<TEntity> Set<TEntity>() where TEntity : BaseEntity
+        public virtual new DbSet<TEntity> Set<TEntity>() where TEntity : BaseEntity
         {
             return base.Set<TEntity>();
         }
@@ -52,10 +49,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         /// </summary>
         public void Install()
         {
-            //create table
-            var dbScript = CreateDatabaseScript();
-            Database.ExecuteSqlCommand(dbScript);
-            SaveChanges();
+            // create table
+            this.ExecuteSqlScript(this.GenerateCreateScript());
         }
 
         /// <summary>
@@ -63,24 +58,16 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         /// </summary>
         public void Uninstall()
         {
-            //drop table
-            var tableName = this.GetTableName<ShippingByTotalRecord>();
-            this.DropPluginTable(tableName);
+            // drop table
+            this.DropPluginTable(nameof(ShippingByTotalRecord));
         }
 
-        public IList<TEntity> ExecuteStoredProcedureList<TEntity>(string commandText, params object[] parameters) where TEntity : BaseEntity, new()
+        public virtual IQueryable<TQuery> QueryFromSql<TQuery>(string sql) where TQuery : class
         {
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Creates a raw SQL query that will return elements of the given generic type.  The type can be any type that has properties that match the names of the columns returned from the query, or can be a simple primitive type. The type does not have to be an entity type. The results of this query are never tracked by the context even if the type of object returned is an entity type.
-        /// </summary>
-        /// <typeparam name="TElement">The type of object returned by the query.</typeparam>
-        /// <param name="sql">The SQL query string.</param>
-        /// <param name="parameters">The parameters to apply to the SQL query string.</param>
-        /// <returns>Result</returns>
-        public IEnumerable<TElement> SqlQuery<TElement>(string sql, params object[] parameters)
+        public virtual IQueryable<TEntity> EntityFromSql<TEntity>(string sql, params object[] parameters) where TEntity : BaseEntity
         {
             throw new NotImplementedException();
         }
@@ -93,59 +80,26 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         /// <param name="timeout">Timeout value, in seconds. A null value indicates that the default value of the underlying provider will be used</param>
         /// <param name="parameters">The parameters to apply to the command string.</param>
         /// <returns>The result returned by the database after executing the command.</returns>
-        public int ExecuteSqlCommand(string sql, bool doNotEnsureTransaction = false, int? timeout = null, params object[] parameters)
+        public virtual int ExecuteSqlCommand(RawSqlString sql, bool doNotEnsureTransaction = false, int? timeout = null, params object[] parameters)
         {
-            throw new NotImplementedException();
+            using (var transaction = this.Database.BeginTransaction())
+            {
+                var result = this.Database.ExecuteSqlCommand(sql, parameters);
+                transaction.Commit();
+
+                return result;
+            }
         }
 
         /// <summary>
         /// Detach an entity
         /// </summary>
         /// <param name="entity">Entity</param>
-        public void Detach(object entity)
+        public virtual void Detach<TEntity>(TEntity entity) where TEntity : BaseEntity
         {
-            if (entity == null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-
-            ((IObjectContextAdapter)this).ObjectContext.Detach(entity);
+            throw new NotImplementedException();
         }
 
         #endregion Methods
-
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets a value indicating whether proxy creation setting is enabled (used in EF)
-        /// </summary>
-        public virtual bool ProxyCreationEnabled
-        {
-            get
-            {
-                return this.Configuration.ProxyCreationEnabled;
-            }
-            set
-            {
-                this.Configuration.ProxyCreationEnabled = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether auto detect changes setting is enabled (used in EF)
-        /// </summary>
-        public virtual bool AutoDetectChangesEnabled
-        {
-            get
-            {
-                return this.Configuration.AutoDetectChangesEnabled;
-            }
-            set
-            {
-                this.Configuration.AutoDetectChangesEnabled = value;
-            }
-        }
-
-        #endregion Properties
     }
 }
