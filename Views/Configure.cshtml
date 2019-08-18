@@ -1,5 +1,11 @@
-﻿@model Nop.Plugin.Shipping.ByTotal.Models.ShippingByTotalListModel
+﻿@model Nop.Plugin.Shipping.ByTotal.Models.ConfigurationModel
+@using Nop.Core
+@using Nop.Plugin.Shipping.ByTotal.Models
+@using Nop.Web.Framework.Models.DataTables
 @inject Nop.Core.Domain.Common.AdminAreaSettings adminAreaSettings
+@inject Nop.Services.Stores.IStoreService storeService
+@inject Nop.Services.Common.IGenericAttributeService genericAttributeService
+@inject IWorkContext workContext
 
 @{
     Layout = "_ConfigurePlugin";
@@ -13,394 +19,367 @@
         </a>
         <a asp-controller="Shipping" asp-action="Restrictions" class="btn bg-blue">
             <i class="fa fa-globe"></i>
-            @T("Admin.Configuration.Shipping.Restrictions.Manage")
+            @T("Admin.Configuration.Shipping.Restrictions")
         </a>
     </div>
 </div>
 
 <div class="panel panel-default">
     <div class="panel-body">
-        <div id="shipping-bytotal-grid"></div>
-        <script type="text/javascript">
-            $(document).ready(function () {
-                $("#shipping-bytotal-grid").kendoGrid({
-                    dataSource: {
-                        type: "json",
-                        transport: {
-                            destroy: {
-                                url: "@Html.Raw(Url.Action("RateDelete", "ShippingByTotal"))",
-                                type: "POST",
-                                dataType: "json",
-                                data: addAntiForgeryToken
-                            },
-                            read: {
-                                url: "@Html.Raw(Url.Action("RatesList", "ShippingByTotal"))",
-                                type: "POST",
-                                dataType: "json",
-                                data: addAntiForgeryToken
-                            },
-                            update: {
-                                url: "@Html.Raw(Url.Action("RateUpdate", "ShippingByTotal"))",
-                                type: "POST",
-                                dataType: "json",
-                                data: addAntiForgeryToken
-                            }
-                        },schema: {
-                            data: "Data",
-                            total: "Total",
-                            errors: "Errors",
-                            model: {
-                                id: "Id",
-                                fields: {
-                                    DisplayOrder: { type: "number" },
-                                    UsePercentage:{ type: "boolean" },
-                                    From: { type: "number" },
-                                    To: { type: "number" },
-                                    ShippingChargeAmount: { type: "number" },
-                                    ShippingChargePercentage: { type: "number" }
-                                }
-                            }
-                        },
-                        requestEnd: function (e) {
-                            if (e.type == "update") {
-                                this.read();
-                            }
-                        },
-                        error: function (e) {
-                            display_kendoui_grid_error(e);
-                            this.cancelChanges();
-                        },
-                        pageSize: @(adminAreaSettings.DefaultGridPageSize),
-                        serverPaging: true,
-                        serverFiltering: true,
-                        serverSorting: true
-                    },
-                    pageable: {
-                        refresh: true,
-                        pageSizes: [@(adminAreaSettings.GridPageSizes)],
-                        @await Html.PartialAsync("~/Areas/Admin/Views/Shared/_GridPagerMessages.cshtml")
-                    },
-                    editable: {
-                        confirmation: false,
-                        mode: "inline"
-                    },
-                    scrollable: false,
-                    columns: [{
-                        field: "StoreId",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.Store")",
-                        width: 100,
-                        editor: storesDropDownEditor,
-                        template: "#=StoreName#"
-                    }, {
-                        field: "WarehouseId",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.Warehouse")",
-                        width: 100,
-                        editor: warehouseDropDownEditor,
-                        template: "#=WarehouseName#"
-                    }, {
-                        field: "CountryId",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.Country")",
-                        width: 100,
-                        editor: countriesDropDownEditor,
-                        template: "#=CountryName#"
-                    }, {
-                        field: "StateProvinceId",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.StateProvince")",
-                        width: 100,
-                        editor: statesProvincesDropDownEditor,
-                        template: "#=StateProvinceName#"
-                    }, {
-                        field: "ZipPostalCode",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.ZipPostalCode")",
-                        width: 100
-                    }, {
-                        field: "DisplayOrder",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.DisplayOrder")",
-                        width: 100,
-                        editor: function (container, options) {
-                            $('<input name="' + options.field + '" />')
-                                    .appendTo(container)
-                                    .kendoNumericTextBox({
-                                        format: "{0:n0}",
-                                        decimals: 0
-                                    });
-                        }
-                    }, {
-                        field: "ShippingMethodId",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.ShippingMethod")",
-                        width: 100,
-                        editor: shippingMethodsDropDownEditor,
-                        template: "#=ShippingMethodName#"
-                    }, {
-                        field: "From",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.From")",
-                        width: 100
-                    }, {
-                        field: "To",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.To")",
-                        width: 100
-                    }, {
-                        field: "UsePercentage",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.UsePercentage")",
-                        width: 100,
-                        attributes: { style: "text-align:center" },
-                        template: "<input type='checkbox' disabled='disabled' name='UsePercentage' # if(UsePercentage) {# checked='checked' #}  # />"
-                    }, {
-                        field: "ShippingChargePercentage",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage")",
-                        width: 100
-                    }, {
-                        field: "ShippingChargeAmount",
-                        title: "@T("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount")",
-                        width: 100
-                    }, {
-                        command: {name: "edit", text: "@T("Admin.Common.Edit")"},
-                        title: "@T("Admin.Common.Edit")",
-                        width: 100
-                    }, {
-                        command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
-                        title: "@T("Admin.Common.Delete")",
-                        width: 100
-                    }]
-                });
+        @await Html.PartialAsync("Table", new DataTablesModel
+        {
+            Name = "shipping-bytotal-grid",
+            UrlRead = new DataUrl("RatesList", "ShippingByTotal", null),
+            UrlDelete = new DataUrl("RateDelete", "ShippingByTotal", null),
+            Length = Model.PageSize,
+            LengthMenu = Model.AvailablePageSizes,
 
-                $("#AddCountryId").change(function () {
-                    var selectedItem = $(this).val();
-                    var ddlStates = $("#AddStateProvinceId")
-                    $.ajax({
-                        cache: false,
-                        type: "GET",
-                        url: "@(Url.Action("GetStatesByCountryId", "Country"))",
-                        data: { "countryId": selectedItem, "addAsterisk": "true" },
-                        success: function (data) {
-                            ddlStates.html('');
-                            $.each(data, function (id, option) {
-                                ddlStates.append($('<option></option>').val(option.id).html(option.name));
-                            });
-                        },
-                        error: function (xhr, ajaxOptions, thrownError) {
-                            alert('@T("Plugins.Shipping.ByTotal.ManageShippingSettings.StatesFailed").Text');
-                        }
-                    });
-                });
-            });
-        </script>
+            ColumnCollection = new List<ColumnProperty>
+            {
+                new ColumnProperty(nameof(ShippingByTotalModel.StoreName))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.Store").Text,
+                    Width = "200",
+                    Visible = Model.AvailableStores.Count > 1
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.WarehouseName))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.Warehouse").Text,
+                    Width = "200",
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.CountryName))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.Country").Text,
+                    Width = "200"
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.StateProvinceName))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.StateProvince").Text,
+                    Width = "200"
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.ZipPostalCode))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.ZipPostalCode").Text,
+                    Width = "100"
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.DisplayOrder))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.DisplayOrder").Text,
+                    Width = "100",
+                    ClassName =  NopColumnClassDefaults.CenterAll
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.ShippingMethodName))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.ShippingMethod").Text,
+                    Width = "200"
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.From))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.From").Text,
+                    Width = "100",
+                    Render = new RenderCustom("renderAmount")
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.To))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.To").Text,
+                    Width = "100",
+                    Render = new RenderCustom("renderAmount")
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.UsePercentage))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.UsePercentage").Text,
+                    Width = "100",
+                    ClassName =  NopColumnClassDefaults.CenterAll,
+                    Render = new RenderBoolean()
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.ShippingChargePercentage))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.ShippingChargePercentage").Text,
+                    Width = "100",
+                    Render = new RenderCustom("renderPercentage")
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.ShippingChargeAmount))
+                {
+                    Title = T("Plugins.Shipping.ByTotal.Fields.ShippingChargeAmount").Text,
+                    Width = "100",
+                    Render = new RenderCustom("renderAmount")
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.Id))
+                {
+                    Title = T("Admin.Common.Edit").Text,
+                    ClassName = NopColumnClassDefaults.Button,
+                    Width = "100",
+                    Render = new RenderCustom("renderColumnEdit")
+                },
+                new ColumnProperty(nameof(ShippingByTotalModel.Id))
+                {
+                    Title = T("Admin.Common.Delete").Text,
+                    ClassName = NopColumnClassDefaults.Button,
+                    Render = new RenderButtonRemove(T("Admin.Common.Delete").Text),
+                    Width = "100"
+                }
+            }
+        })
+    </div>
+
+    <div class="panel-footer">
+        <button type="submit" id="btnAddRecord" class="btn btn-primary">
+            @T("Plugins.Shipping.ByTotal.AddRecord")
+        </button>
     </div>
 </div>
 
-<script type="text/javascript">
-    @* available shipping methods for inline editing *@
-    var shippingMethods = [
-     @for (int i = 0; i < Model.AvailableShippingMethods.Count; i++)
-     {
-        var shippingMethod = Model.AvailableShippingMethods[i];
-        <text>
-        {
-            ShippingMethodId: @shippingMethod.Value,
-            ShippingMethodName: "@(shippingMethod.Text)"
-        }</text>
-        if (i != Model.AvailableShippingMethods.Count - 1)
-        {
-            <text>,</text>
-        }
-     }
-    ];
+<div class="panel panel-default" id="addeditpanel" style="display:none;">
+    <div class="panel-body">
+        <p id="addedittitle" style="font-weight:700"></p>
 
-    @* available stores for inline editing *@
-    var stores = [
-     @for (int i = 0; i < Model.AvailableStores.Count; i++)
-     {
-        var store = Model.AvailableStores[i];
-        <text>
-        {
-            StoreId: @store.Value,
-            StoreName: "@(store.Text)"
-        }</text>
-        if (i != Model.AvailableStores.Count - 1)
-        {
-            <text>,</text>
-        }
-     }
-    ];
+        <form asp-controller="ShippingByTotal" asp-action="Configure" method="post" id="shipping-bytotal-form">
 
-    @* available warehouses for inline editing *@
-    var warehouses = [
-     @for (int i = 0; i < Model.AvailableWarehouses.Count; i++)
-     {
-         var warehouse = Model.AvailableWarehouses[i];
-         <text>
-        {
-            WarehouseId: @warehouse.Value,
-            WarehouseName: "@(warehouse.Text)"
-        }</text>
-        if (i != Model.AvailableWarehouses.Count - 1)
-        {
-            <text>,</text>
-        }
-     }
-    ];
+            <input type="hidden" id="Id" value="0" />
 
-    @* available countries for inline editing *@
-    var countries = [
-     @for (int i = 0; i < Model.AvailableCountries.Count; i++)
-     {
-        var country = Model.AvailableCountries[i];
-        <text>
-        {
-            CountryId: @country.Value,
-            CountryName: "@(country.Text)"
-        }</text>
-        if (i != Model.AvailableCountries.Count - 1)
-        {
-            <text>,</text>
-        }
-     }
-    ];
+            <div class="form-group">
+                <div class="col-md-3">
+                    <nop-label asp-for="StoreId" />
+                </div>
+                <div class="col-md-9">
+                    <nop-select asp-for="StoreId" asp-items="Model.AvailableStores" />
+                    <span asp-validation-for="StoreId"></span>
+                </div>
+            </div>
 
-    function shippingMethodsDropDownEditor(container, options) {
-        $('<input required data-text-field="ShippingMethodName" data-value-field="ShippingMethodId" data-bind="value:' + options.field + '" />')
-            .appendTo(container)
-            .kendoDropDownList({
-                autoBind: false,
-                dataSource: {
-                    data: shippingMethods,
-                    schema: {
-                        model: {
-                            fields: {
-                                ShippingMethodId: { type: "string" },
-                                ShippingMethodName: { type: "string" },
-                            }
-                        }
+            <div class="form-group">
+                <div class="col-md-3">
+                    <nop-label asp-for="WarehouseId" />
+                </div>
+                <div class="col-md-9">
+                    <nop-select asp-for="WarehouseId" asp-items="Model.AvailableWarehouses" />
+                    <span asp-validation-for="WarehouseId"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-3">
+                    <nop-label asp-for="CountryId" />
+                </div>
+                <div class="col-md-9">
+                    <nop-select asp-for="CountryId" asp-items="Model.AvailableCountries" />
+                    <span asp-validation-for="CountryId"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-3">
+                    <nop-label asp-for="StateProvinceId" />
+                </div>
+                <div class="col-md-9">
+                    <nop-select asp-for="StateProvinceId" asp-items="Model.AvailableStates" />
+                    <span asp-validation-for="StateProvinceId"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-3">
+                    <nop-label asp-for="ZipPostalCode" />
+                </div>
+                <div class="col-md-9">
+                    <nop-editor asp-for="ZipPostalCode" />
+                    <span asp-validation-for="ZipPostalCode"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-3">
+                    <nop-label asp-for="DisplayOrder" />
+                </div>
+                <div class="col-md-9">
+                    <nop-editor asp-for="DisplayOrder" />
+                    <span asp-validation-for="DisplayOrder"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-3">
+                    <nop-label asp-for="ShippingMethodId" />
+                </div>
+                <div class="col-md-9">
+                    <nop-select asp-for="ShippingMethodId" asp-items="Model.AvailableShippingMethods" />
+                    <span asp-validation-for="ShippingMethodId"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-3">
+                    <nop-label asp-for="From" />
+                </div>
+                <div class="col-md-9">
+                    <nop-editor asp-for="From" asp-postfix="@Model.PrimaryStoreCurrencyCode" />
+                    <span asp-validation-for="From"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-3">
+                    <nop-label asp-for="To" />
+                </div>
+                <div class="col-md-9">
+                    <nop-editor asp-for="To" asp-postfix="@Model.PrimaryStoreCurrencyCode" />
+                    <span asp-validation-for="To"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-3">
+                    <nop-label asp-for="UsePercentage" />
+                </div>
+                <div class="col-md-9">
+                    <nop-editor asp-for="UsePercentage" />
+                    <span asp-validation-for="UsePercentage"></span>
+                </div>
+            </div>
+
+            <div class="form-group" id="pnlAddShippingChargePercentage">
+                <div class="col-md-3">
+                    <nop-label asp-for="ShippingChargePercentage" />
+                </div>
+                <div class="col-md-9">
+                    <nop-editor asp-for="ShippingChargePercentage" />
+                    <span asp-validation-for="ShippingChargePercentage"></span>
+                </div>
+            </div>
+
+            <div class="form-group" id="pnlAddShippingChargeAmount">
+                <div class="col-md-3">
+                    <nop-label asp-for="ShippingChargeAmount" />
+                </div>
+                <div class="col-md-9">
+                    <nop-editor asp-for="ShippingChargeAmount" asp-postfix="@Model.PrimaryStoreCurrencyCode" />
+                    <span asp-validation-for="ShippingChargeAmount"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-3">
+                    &nbsp;
+                </div>
+                <div class="col-md-9">
+                    <button type="button" id="addeditbutton" class="btn btn-primary"></button>
+                    <button type="reset" id="resetshippingbytotalrecord" class="btn btn-default">
+                        @T("Plugins.Shipping.ByTotal.Reset")
+                    </button>
+                    <button type="button" id="cancelbutton" class="btn btn-default">
+                        @T("Admin.Common.Cancel")
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <p>
+            <b>@T("Plugins.Shipping.ByTotal.SettingsTitle")</b>
+        </p>
+
+        <div class="form-group">
+            <div class="col-md-3">
+                <nop-label asp-for="LimitMethodsToCreated" />
+            </div>
+            <div class="col-md-9">
+                <nop-editor asp-for="LimitMethodsToCreated" />
+                <span asp-validation-for="LimitMethodsToCreated"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-3">
+                &nbsp;
+            </div>
+            <div class="col-md-9">
+                <button type="button" id="savegeneralsettings" class="btn btn-primary">
+                    @T("Admin.Common.Save")
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $("#UsePercentage").click(toggleUsePercentage);
+        toggleUsePercentage();
+
+        // open add record form
+        $('#btnAddRecord').click(addRecord);
+
+        // change country id, load its states/provinces
+        $("#CountryId").change(function () {
+                var selectedItem = $(this).val();
+                var ddlStates = $("#StateProvinceId")
+                $.ajax({
+                    cache: false,
+                    type: "GET",
+                    url: "@(Url.Action("GetStatesByCountryId", "Country"))",
+                    data: { "countryId": selectedItem, "addAsterisk": "true" },
+                    success: function (data) {
+                        ddlStates.html('');
+                        $.each(data, function (id, option) {
+                            ddlStates.append($('<option></option>').val(option.id).html(option.name));
+                        });
                     },
-                    error: function (e) {
-                        display_kendoui_grid_error(e);
-                        this.cancelChanges();
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        $("#getStatesByCountryIdAlert").click();
                     }
-                },
-            });
-    }
+                });
+        });
 
-    function storesDropDownEditor(container, options) {
-        $('<input required data-text-field="StoreName" data-value-field="StoreId" data-bind="value:' + options.field + '" />')
-            .appendTo(container)
-            .kendoDropDownList({
-                autoBind: false,
-                dataSource: {
-                    data: stores,
-                    schema: {
-                        model: {
-                            fields: {
-                                StoreId: { type: "string" },
-                                StoreName: { type: "string" },
-                            }
-                        }
+        // cancel Add/Edit form
+        $('#cancelbutton').click(function () {
+            $('#resetshippingbytotalrecord').click();
+            $('#Id').val('0');
+            $('#addeditbutton').text("@T("Admin.Common.AddNew")").attr('data-update', 0);
+            $('#addeditpanel').hide();
+        });
+
+        // add/edit record form
+        $('#addeditbutton').click(function () {
+            // get whether to update or insert
+            var update = $(this).attr('data-update');
+
+            // update record
+            if (update === '1') {
+                var id = $('#Id').val();
+                $.ajax({
+                    cache: false,
+                    type: 'POST',
+                    url: '@Url.Action("RateUpdate", "ShippingByTotal")',
+                    data: addAntiForgeryToken({
+                        'Id': id,
+                        'StoreId': $('#StoreId').val(),
+                        'WarehouseId': $('#WarehouseId').val(),
+                        'CountryId': $('#CountryId').val(),
+                        'StateProvinceId': $('#StateProvinceId').val(),
+                        'ZipPostalCode': $('#ZipPostalCode').val(),
+                        'DisplayOrder': $('#DisplayOrder').val(),
+                        'ShippingMethodId': $('#ShippingMethodId').val(),
+                        'From': $('#From').val(),
+                        'To': $('#To').val(),
+                        'UsePercentage': $('#UsePercentage').is(':checked'),
+                        'ShippingChargeAmount': $('#ShippingChargeAmount').val(),
+                        'ShippingChargePercentage': $('#ShippingChargePercentage').val()
+                    }),
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#addeditpanel').hide();
+                        $("#updateRecordOk").click();
+                        updateTable('#shipping-bytotal-grid');
                     },
-                    error: function (e) {
-                        display_kendoui_grid_error(e);
-                        this.cancelChanges();
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        $('#updateRecordFail').click();
                     }
-                },
-            });
-    }
-
-    function warehouseDropDownEditor(container, options) {
-        $('<input required data-text-field="WarehouseName" data-value-field="WarehouseId" data-bind="value:' + options.field + '" />')
-            .appendTo(container)
-            .kendoDropDownList({
-                autoBind: false,
-                dataSource: {
-                    data: warehouses,
-                    schema: {
-                        model: {
-                            fields: {
-                                WarehouseId: { type: "string" },
-                                WarehouseName: { type: "string" },
-                            }
-                        }
-                    },
-                    error: function (e) {
-                        display_kendoui_grid_error(e);
-                        this.cancelChanges();
-                    }
-                },
-            });
-    }
-
-    function countriesDropDownEditor(container, options) {
-        $('<input required data-text-field="CountryName" data-value-field="CountryId" data-bind="value:' + options.field + '" />')
-            .appendTo(container)
-            .kendoDropDownList({
-                autoBind: false,
-                dataSource: {
-                    data: countries,
-                    schema: {
-                        model: {
-                            fields: {
-                                CountryId: { type: "string" },
-                                CountryName: { type: "string" },
-                            }
-                        }
-                    },
-                    error: function (e) {
-                        display_kendoui_grid_error(e);
-                        this.cancelChanges();
-                    }
-                },
-            }).change(function(e){
-                options.model.StateProvinceId = 0;
-                var statesProvincesDDL = $('[data-value-field=StateProvinceId]').data("kendoDropDownList");
-                statesProvincesDDL.dataSource.transport.options.read.data = { countryId: options.model.CountryId, addAsterisk: "true" }
-                statesProvincesDDL.dataSource.read();
-            });
-    }
-
-    function statesProvincesDropDownEditor(container, options) {
-        $('<input required data-text-field="StateProvinceName" data-value-field="StateProvinceId" data-bind="value:' + options.field + '" />')
-            .appendTo(container)
-            .kendoDropDownList({
-                autoBind: false,
-                dataSource: {
-                    transport: {
-                        read: {
-                            url:"@(Url.Action("GetStatesByCountryId", "Country"))",
-                            dataType: "json",
-                            data: { countryId: options.model.CountryId, addAsterisk: "true" }
-                        }
-                    },
-                    schema: {
-                        model: {
-                            fields: {
-                                StateProvinceId: { type: "string" },
-                                StateProvinceName: { type: "string" },
-                            }
-                        },
-                        parse: function(response) {
-                            var statesProvices = [];
-                            for (var i = 0; i < response.length; i++) {
-                                var stateProvince = {
-                                    StateProvinceId: response[i].id,
-                                    StateProvinceName: response[i].name
-                                };
-                                statesProvices.push(stateProvince);
-                            }
-                            return statesProvices;
-                        }
-                    },
-                    error: function (e) {
-                        display_kendoui_grid_error(e);
-                        this.cancelChanges();
-                    }
-                }
-            });
-    }
-</script>
-<form asp-controller="ShippingByTotal" asp-action="Configure" method="post" id="shipping-bytotal-form">
-    <script type="text/javascript">
-        $(function () {
-            $("#AddUsePercentage").click(toggleAddUsePercentage);
-            toggleAddUsePercentage();
-
-            $('#addshippingbytotalrecord').click(function () {
+                });
+            } else {
+                // add record
                 $.ajax({
                     cache: false,
                     type: 'POST',
@@ -408,225 +387,131 @@
                     data: $(this.form).serialize(),
                     dataType: 'json',
                     success: function (data) {
-                        if (data.Result == true) {
-                            var grid = $("#shipping-bytotal-grid").data("kendoGrid");
-                            grid.dataSource.read();
-                        }
-                        else {
-                            alert(data.Message);
-                        }
+                        $("#addRecordOk").click();
+                        updateTable('#shipping-bytotal-grid');
                     },
                     error: function (xhr, ajaxOptions, thrownError) {
-                        alert('@T("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed").Text');
+                        $("#addRecordFail").click();
                     }
                 });
-                return false;
-            });
-
-            $('#resetshippingbytotalrecord').click(function () {
-                $('#AddUsePercentage').attr('checked', false);
-                toggleAddUsePercentage();
-            });
-
-            $('#savegeneralsettings').click(function () {
-                var postData = $(this.form).serialize();
-                addAntiForgeryToken(postData);
-                $.ajax({
-                    cache: false,
-                    type: 'POST',
-                    url: '@Url.Action("SaveGeneralSettings", "ShippingByTotal")',
-                    data: postData,
-                    dataType: 'json',
-                    success: function (data) {
-                        alert(data.Message);
-                    },
-                    error: function (xhr, ajaxOptions, thrownError) {
-                        alert('@T("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed").Text');
-                    }
-                });
-                return false;
-            });
+            }
+            return false;
         });
-        function toggleAddUsePercentage() {
-            if ($('#AddUsePercentage').is(':checked')) {
-                $('#pnlAddShippingChargePercentage').show();
-                $('#pnlAddShippingChargeAmount').hide();
-            }
-            else {
-                $('#pnlAddShippingChargePercentage').hide();
-                $('#pnlAddShippingChargeAmount').show();
-            }
+
+        // reset form
+        $('#resetshippingbytotalrecord').click(function () {
+            $('#UsePercentage').attr('checked', false);
+            toggleUsePercentage();
+        });
+
+        // save settings
+        $('#savegeneralsettings').click(function () {
+            $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@Url.Action("SaveGeneralSettings", "ShippingByTotal")',
+                data: addAntiForgeryToken({ 'LimitMethodsToCreated': $('#LimitMethodsToCreated').is(':checked')}),
+                dataType: 'json',
+                success: function (data) {
+                    $("#savegeneralsettingsOk").click();
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    $("#savegeneralsettingsError").click();
+                }
+            });
+            return false;
+        });
+    });
+
+    // toggle UsePercentage/ChargeAmount controls based on checkbox
+    function toggleUsePercentage() {
+        if ($('#UsePercentage').is(':checked')) {
+            $('#pnlAddShippingChargePercentage').show();
+            $('#pnlAddShippingChargeAmount').hide();
         }
-    </script>
+        else {
+            $('#pnlAddShippingChargePercentage').hide();
+            $('#pnlAddShippingChargeAmount').show();
+        }
+    }
 
-    <div class="panel panel-default">
-        <div class="panel-body">
-            <p>
-                <b>@T("Plugins.Shipping.ByTotal.AddNewRecordTitle")</b>
-            </p>
+    // set up form to add a shipping by total record
+    function addRecord() {
+        $("#addedittitle").text("@T("Plugins.Shipping.ByTotal.AddNewRecordTitle")");
+        $('#resetshippingbytotalrecord').click();
+        $('#Id').val('0');
+        // clear the states/provinces
+        $("#StateProvinceId").html('').append($('<option></option>').val(0).html('*'));;
+        // update submit buttons
+        $('#addeditbutton').text("@T("Admin.Common.AddNew")").attr('data-update', 0);
+        $('#addeditpanel').show();
+    }
 
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddStoreId" />
-                </div>
-                <div class="col-md-9">
-                    <nop-select asp-for="AddStoreId" asp-items="Model.AvailableStores" />
-                    <span asp-validation-for="AddStoreId"></span>
-                </div>
-            </div>
+    // set up form to edit a shipping by total record
+    function editRecord(id) {
+        $("#addedittitle").text("@T("Plugins.Shipping.ByTotal.EditRecordTitle")");
+        $('#resetshippingbytotalrecord').click();
+        // get and load record into form
+        $('#Id').val(id);
+        $.ajax({
+            cache: false,
+            type: 'POST',
+            url: '@Url.Action("GetRate", "ShippingByTotal")',
+            data: addAntiForgeryToken({ 'id': id }),
+            dataType: 'json',
+            success: function (data) {
+                $('#StoreId').val(data.StoreId);
+                $('#WarehouseId').val(data.WarehouseId);
+                $('#CountryId').val(data.CountryId).change();
+                // use a slight delay so the States/Provinces can be loaded
+                setTimeout(function () {
+                    $('#StateProvinceId').val(data.StateProvinceId);
+                }, 500);
 
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddWarehouseId" />
-                </div>
-                <div class="col-md-9">
-                    <nop-select asp-for="AddWarehouseId" asp-items="Model.AvailableWarehouses" />
-                    <span asp-validation-for="AddWarehouseId"></span>
-                </div>
-            </div>
+                $('#ZipPostalCode').val(data.ZipPostalCode);
+                $('#DisplayOrder').val(data.DisplayOrder);
+                $('#ShippingMethodId').val(data.ShippingMethodId);
+                $('#From').val(data.From);
+                $('#To').val(data.To);
+                if (data.UsePercentage) {
+                    $('#UsePercentage').prop('checked', true);
+                    toggleUsePercentage();
+                }
+                $('#ShippingChargeAmount').val(data.ShippingChargeAmount);
+                $('#ShippingChargePercentage').val(data.ShippingChargePercentage);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                $('#loadRecordFail').click();
+            }
+        });
 
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddCountryId" />
-                </div>
-                <div class="col-md-9">
-                    <nop-select asp-for="AddCountryId" asp-items="Model.AvailableCountries" />
-                    <span asp-validation-for="AddCountryId"></span>
-                </div>
-            </div>
+        // update submit buttons
+        $('#addeditbutton').text("@T("Admin.Common.Update")").attr('data-update', 1);
+        $('#addeditpanel').show();
+    }
 
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddStateProvinceId" />
-                </div>
-                <div class="col-md-9">
-                    <nop-select asp-for="AddStateProvinceId" asp-items="Model.AvailableStates" />
-                    <span asp-validation-for="AddStateProvinceId"></span>
-                </div>
-            </div>
+    // column edit (open row in edit form)
+    function renderColumnEdit(data, type, row, meta) {
+        return '<button onclick=\"editRecord('+data+'); return false;\" class="btn btn-default"><i class="fa fa-pencil"></i>@T("Admin.Common.Edit")</button>';
+    }
+    // show two decimal places for amounts
+    function renderAmount(data, type, row, meta) {
+        return Number(data).toFixed(2);
+    }
+    // add a percentage sign if value is not zero
+    function renderPercentage(data, type, row, meta) {
+        if (data != "0") {
+            return data + '%';
+        }
+        return data;
+    }
+</script>
 
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddZipPostalCode" />
-                </div>
-                <div class="col-md-9">
-                    <nop-editor asp-for="AddZipPostalCode" />
-                    <span asp-validation-for="AddZipPostalCode"></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddDisplayOrder" />
-                </div>
-                <div class="col-md-9">
-                    <nop-editor asp-for="AddDisplayOrder" />
-                    <span asp-validation-for="AddDisplayOrder"></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddShippingMethodId" />
-                </div>
-                <div class="col-md-9">
-                    <nop-select asp-for="AddShippingMethodId" asp-items="Model.AvailableShippingMethods" />
-                    <span asp-validation-for="AddShippingMethodId"></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddFrom" />
-                </div>
-                <div class="col-md-9">
-                    <nop-editor asp-for="AddFrom" asp-postfix="@Model.PrimaryStoreCurrencyCode" />
-                    <span asp-validation-for="AddFrom"></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddTo" />
-                </div>
-                <div class="col-md-9">
-                    <nop-editor asp-for="AddTo" asp-postfix="@Model.PrimaryStoreCurrencyCode" />
-                    <span asp-validation-for="AddTo"></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddUsePercentage" />
-                </div>
-                <div class="col-md-9">
-                    <nop-editor asp-for="AddUsePercentage" />
-                    <span asp-validation-for="AddUsePercentage"></span>
-                </div>
-            </div>
-
-            <div class="form-group" id="pnlAddShippingChargePercentage">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddShippingChargePercentage" />
-                </div>
-                <div class="col-md-9">
-                    <nop-editor asp-for="AddShippingChargePercentage" />
-                    <span asp-validation-for="AddShippingChargePercentage"></span>
-                </div>
-            </div>
-
-            <div class="form-group" id="pnlAddShippingChargeAmount">
-                <div class="col-md-3">
-                    <nop-label asp-for="AddShippingChargeAmount" />
-                </div>
-                <div class="col-md-9">
-                    <nop-editor asp-for="AddShippingChargeAmount" asp-postfix="@Model.PrimaryStoreCurrencyCode" />
-                    <span asp-validation-for="AddShippingChargeAmount"></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-md-3">
-                    &nbsp;
-                </div>
-                <div class="col-md-9">
-                    <button type="button" id="addshippingbytotalrecord" class="btn btn-primary">
-                        @T("Admin.Common.AddNew")
-                    </button>
-                    <button type="reset" id="resetshippingbytotalrecord" class="btn btn-default">
-                        @T("Plugins.Shipping.ByTotal.Reset")
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="panel panel-default">
-        <div class="panel-body">
-            <p>
-                <b>@T("Plugins.Shipping.ByTotal.SettingsTitle")</b>
-            </p>
-
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="LimitMethodsToCreated" />
-                </div>
-                <div class="col-md-9">
-                    <nop-editor asp-for="LimitMethodsToCreated" />
-                    <span asp-validation-for="LimitMethodsToCreated"></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-md-3">
-                    &nbsp;
-                </div>
-                <div class="col-md-9">
-                    <button type="button" id="savegeneralsettings" class="btn btn-primary">
-                        @T("Admin.Common.Save")
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
+<nop-alert asp-alert-id="getStatesByCountryIdAlert" asp-alert-message="@T("Plugins.Shipping.ByTotal.ManageShippingSettings.StatesFailed")" />
+<nop-alert asp-alert-id="savegeneralsettingsOk" asp-alert-message="@T("Admin.Common.Alert.Save.Ok")" />
+<nop-alert asp-alert-id="savegeneralsettingsError" asp-alert-message="@T("Admin.Common.Alert.Save.Error")" />
+<nop-alert asp-alert-id="addRecordOk" asp-alert-message="@T("Plugins.Shipping.ByTotal.RecordInsertSuccess")" />
+<nop-alert asp-alert-id="addRecordFail" asp-alert-message="@T("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed")" />
+<nop-alert asp-alert-id="updateRecordOk" asp-alert-message="@T("Plugins.Shipping.ByTotal.RecordUpdateSuccess")" />
+<nop-alert asp-alert-id="updateRecordFail" asp-alert-message="@T("Plugins.Shipping.ByTotal.ManageShippingSettings.UpdateFailed")" />
+<nop-alert asp-alert-id="loadRecordFail" asp-alert-message="@T("Plugins.Shipping.ByTotal.RecordLoadFail")" />

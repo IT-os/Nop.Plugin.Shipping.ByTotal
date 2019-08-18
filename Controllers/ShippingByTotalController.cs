@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Nop.Core.Domain.Directory;
 using Nop.Plugin.Shipping.ByTotal.Domain;
@@ -12,11 +13,9 @@ using Nop.Services.Shipping;
 using Nop.Services.Stores;
 using Nop.Web.Framework;
 using Nop.Web.Framework.Controllers;
-using Nop.Web.Framework.Kendoui;
+using Nop.Web.Framework.Models.Extensions;
 using Nop.Web.Framework.Mvc;
 using Nop.Web.Framework.Mvc.Filters;
-using System;
-using System.Linq;
 
 namespace Nop.Plugin.Shipping.ByTotal.Controllers
 {
@@ -83,7 +82,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
                 return Content("No shipping methods can be loaded");
             }
 
-            var model = new ShippingByTotalListModel();
+            var model = new ConfigurationModel();
 
             // stores
             model.AvailableStores.Add(new SelectListItem() { Text = "*", Value = "0" });
@@ -117,70 +116,99 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             model.LimitMethodsToCreated = _shippingByTotalSettings.LimitMethodsToCreated;
             model.PrimaryStoreCurrencyCode = _currencyService.GetCurrencyById(_currencySettings.PrimaryStoreCurrencyId).CurrencyCode;
 
+            model.SetGridPageSize();
+
             return View("~/Plugins/Shipping.ByTotal/Views/Configure.cshtml", model);
         }
 
         [HttpPost, AdminAntiForgery]
-        public IActionResult RatesList(DataSourceRequest command)
+        public IActionResult RatesList(ConfigurationModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
             {
-                return AccessDeniedKendoGridJson();
+                return AccessDeniedDataTablesJson();
             }
 
-            var records = _shippingByTotalService.GetAllShippingByTotalRecords(command.Page - 1, command.PageSize);
-            var sbtModel = records.Select(x =>
+            var records = _shippingByTotalService.GetAllShippingByTotalRecords(model.Page - 1, model.PageSize);
+
+            var gridModel = new ShippingByTotalListModel().PrepareToGrid(model, records, () =>
+            {
+                return records.Select(record =>
                 {
-                    var m = new ShippingByTotalModel
+                    var sbtModel = new ShippingByTotalModel
                     {
-                        Id = x.Id,
-                        StoreId = x.StoreId,
-                        WarehouseId = x.WarehouseId,
-                        ShippingMethodId = x.ShippingMethodId,
-                        CountryId = x.CountryId,
-                        DisplayOrder = x.DisplayOrder,
-                        From = x.From,
-                        To = x.To,
-                        UsePercentage = x.UsePercentage,
-                        ShippingChargePercentage = x.ShippingChargePercentage,
-                        ShippingChargeAmount = x.ShippingChargeAmount,
+                        Id = record.Id,
+                        StoreId = record.StoreId,
+                        WarehouseId = record.WarehouseId,
+                        ShippingMethodId = record.ShippingMethodId,
+                        CountryId = record.CountryId,
+                        DisplayOrder = record.DisplayOrder,
+                        From = record.From,
+                        To = record.To,
+                        UsePercentage = record.UsePercentage,
+                        ShippingChargePercentage = record.ShippingChargePercentage,
+                        ShippingChargeAmount = record.ShippingChargeAmount,
                     };
 
                     // shipping method
-                    var shippingMethod = _shippingService.GetShippingMethodById(x.ShippingMethodId);
-                    m.ShippingMethodName = (shippingMethod != null) ? shippingMethod.Name : "Unavailable";
+                    var shippingMethod = _shippingService.GetShippingMethodById(record.ShippingMethodId);
+                    sbtModel.ShippingMethodName = (shippingMethod != null) ? shippingMethod.Name : "Unavailable";
 
                     // store
-                    var store = _storeService.GetStoreById(x.StoreId);
-                    m.StoreName = (store != null) ? store.Name : "*";
+                    var store = _storeService.GetStoreById(record.StoreId);
+                    sbtModel.StoreName = (store != null) ? store.Name : "*";
 
                     // warehouse
-                    var warehouse = _shippingService.GetWarehouseById(x.WarehouseId);
-                    m.WarehouseName = (warehouse != null) ? warehouse.Name : "*";
+                    var warehouse = _shippingService.GetWarehouseById(record.WarehouseId);
+                    sbtModel.WarehouseName = (warehouse != null) ? warehouse.Name : "*";
 
                     // country
-                    var c = _countryService.GetCountryById(x.CountryId);
-                    m.CountryName = (c != null) ? c.Name : "*";
-                    m.CountryId = x.CountryId;
+                    var c = _countryService.GetCountryById(record.CountryId);
+                    sbtModel.CountryName = (c != null) ? c.Name : "*";
+                    sbtModel.CountryId = record.CountryId;
 
                     // state/province
-                    var s = _stateProvinceService.GetStateProvinceById(x.StateProvinceId);
-                    m.StateProvinceName = (s != null) ? s.Name : "*";
-                    m.StateProvinceId = x.StateProvinceId;
+                    var s = _stateProvinceService.GetStateProvinceById(record.StateProvinceId);
+                    sbtModel.StateProvinceName = (s != null) ? s.Name : "*";
+                    sbtModel.StateProvinceId = record.StateProvinceId;
 
                     // ZIP / postal code
-                    m.ZipPostalCode = (!String.IsNullOrEmpty(x.ZipPostalCode)) ? x.ZipPostalCode : "*";
+                    sbtModel.ZipPostalCode = (!string.IsNullOrEmpty(record.ZipPostalCode)) ? record.ZipPostalCode : "*";
 
-                    return m;
-                })
-                .ToList();
-            var gridModel = new DataSourceResult
-            {
-                Data = sbtModel,
-                Total = records.TotalCount
-            };
+                    return sbtModel;
+                });
+            });
 
             return Json(gridModel);
+        }
+
+        [HttpPost, AdminAntiForgery]
+        public IActionResult GetRate(int id)
+        {
+            var shippingByTotalRecord = _shippingByTotalService.GetShippingByTotalRecordById(id);
+
+            if (shippingByTotalRecord != null)
+            {
+                var model = new ShippingByTotalModel
+                {
+                    Id = shippingByTotalRecord.Id,
+                    ZipPostalCode = shippingByTotalRecord.ZipPostalCode,
+                    DisplayOrder = shippingByTotalRecord.DisplayOrder,
+                    From = shippingByTotalRecord.From,
+                    To = shippingByTotalRecord.To,
+                    UsePercentage = shippingByTotalRecord.UsePercentage,
+                    ShippingChargePercentage = shippingByTotalRecord.ShippingChargePercentage,
+                    ShippingChargeAmount = shippingByTotalRecord.ShippingChargeAmount,
+                    ShippingMethodId = shippingByTotalRecord.ShippingMethodId,
+                    StoreId = shippingByTotalRecord.StoreId,
+                    WarehouseId = shippingByTotalRecord.WarehouseId,
+                    StateProvinceId = shippingByTotalRecord.StateProvinceId,
+                    CountryId = shippingByTotalRecord.CountryId
+                };
+
+                return Json(model);
+            }
+            return new NullJsonResult();
         }
 
         [HttpPost, AdminAntiForgery]
@@ -188,7 +216,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
             {
-                return AccessDeniedKendoGridJson();
+                return AccessDeniedDataTablesJson();
             }
 
             var shippingByTotalRecord = _shippingByTotalService.GetShippingByTotalRecordById(model.Id);
@@ -214,7 +242,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
             {
-                return AccessDeniedKendoGridJson();
+                return AccessDeniedDataTablesJson();
             }
 
             var shippingByTotalRecord = _shippingByTotalService.GetShippingByTotalRecordById(id);
@@ -226,14 +254,14 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         }
 
         [HttpPost, AdminAntiForgery]
-        public IActionResult AddShippingRate(ShippingByTotalListModel model)
+        public IActionResult AddShippingRate(ShippingByTotalModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
             {
                 return Json(new { Result = false, Message = _localizationService.GetResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AccessDenied") });
             }
 
-            var zipPostalCode = model.AddZipPostalCode;
+            var zipPostalCode = model.ZipPostalCode;
 
             if (zipPostalCode != null)
             {
@@ -247,18 +275,18 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
 
             var shippingByTotalRecord = new ShippingByTotalRecord
             {
-                ShippingMethodId = model.AddShippingMethodId,
-                StoreId = model.AddStoreId,
-                WarehouseId = model.AddWarehouseId,
-                CountryId = model.AddCountryId,
-                StateProvinceId = model.AddStateProvinceId,
+                ShippingMethodId = model.ShippingMethodId,
+                StoreId = model.StoreId,
+                WarehouseId = model.WarehouseId,
+                CountryId = model.CountryId,
+                StateProvinceId = model.StateProvinceId,
                 ZipPostalCode = zipPostalCode,
-                DisplayOrder = model.AddDisplayOrder,
-                From = model.AddFrom,
-                To = model.AddTo,
-                UsePercentage = model.AddUsePercentage,
-                ShippingChargePercentage = (model.AddUsePercentage) ? model.AddShippingChargePercentage : 0,
-                ShippingChargeAmount = (model.AddUsePercentage) ? 0 : model.AddShippingChargeAmount
+                DisplayOrder = model.DisplayOrder,
+                From = model.From,
+                To = model.To,
+                UsePercentage = model.UsePercentage,
+                ShippingChargePercentage = (model.UsePercentage) ? model.ShippingChargePercentage : 0,
+                ShippingChargeAmount = (model.UsePercentage) ? 0 : model.ShippingChargeAmount
             };
             _shippingByTotalService.InsertShippingByTotalRecord(shippingByTotalRecord);
 
@@ -266,7 +294,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
         }
 
         [HttpPost, AdminAntiForgery]
-        public IActionResult SaveGeneralSettings(ShippingByTotalListModel model)
+        public IActionResult SaveGeneralSettings(ConfigurationModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
             {

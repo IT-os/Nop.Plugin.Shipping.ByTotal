@@ -1,15 +1,15 @@
-﻿using Nop.Core;
+﻿using System;
+using Nop.Core;
 using Nop.Core.Domain.Shipping;
-using Nop.Core.Plugins;
 using Nop.Plugin.Shipping.ByTotal.Data;
 using Nop.Plugin.Shipping.ByTotal.Services;
 using Nop.Services.Catalog;
 using Nop.Services.Configuration;
 using Nop.Services.Localization;
 using Nop.Services.Logging;
+using Nop.Services.Plugins;
 using Nop.Services.Shipping;
 using Nop.Services.Shipping.Tracking;
-using System;
 
 namespace Nop.Plugin.Shipping.ByTotal
 {
@@ -248,6 +248,8 @@ namespace Nop.Plugin.Shipping.ByTotal
             _objectContext.Install();
 
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle", "Add new 'Shipping By Total' record");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddRecord", "Add record");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.EditRecordTitle", "Edit 'Shipping By Total' record");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country", "Country");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country.Hint", "If an asterisk is selected, then this shipping rate will apply to all customers, regardless of the country.");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.DisplayOrder", "Display Order");
@@ -278,8 +280,14 @@ namespace Nop.Plugin.Shipping.ByTotal
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed", "Failed to add record.");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.Saved", "Saved");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.StatesFailed", "Failed to retrieve states.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.UpdateFailed", "Failed to update record.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.RecordInsertSuccess", "Record successfully added.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.RecordLoadFail", "Failed loading record.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.RecordUpdateSuccess", "Record successfully updated.");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Reset", "Reset");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.SaveSettingsFailed", "Failed to save settings");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.SettingsTitle", "Shipping By Total Settings");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.UpdateRecord", "Update record");
 
             base.Install();
 
@@ -296,6 +304,8 @@ namespace Nop.Plugin.Shipping.ByTotal
             _objectContext.Uninstall();
 
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle");
+            _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.AddRecord");
+            _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.EditRecordTitle");
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country");
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country.Hint");
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.DisplayOrder");
@@ -326,8 +336,14 @@ namespace Nop.Plugin.Shipping.ByTotal
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.AddFailed");
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.Saved");
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.StatesFailed");
+            _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.ManageShippingSettings.UpdateFailed");
+            _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.RecordInsertSuccess");
+            _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.RecordLoadFail");
+            _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.RecordUpdateSuccess");
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.Reset");
+            _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.SaveSettingsFailed");
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.SettingsTitle");
+            _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.UpdateRecord");
 
             base.Uninstall();
         }

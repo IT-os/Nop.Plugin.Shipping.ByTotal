@@ -1,11 +1,11 @@
-﻿using Nop.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Nop.Core;
 using Nop.Core.Caching;
 using Nop.Core.Data;
 using Nop.Core.Domain.Shipping;
 using Nop.Plugin.Shipping.ByTotal.Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Nop.Plugin.Shipping.ByTotal.Services
 {
@@ -21,6 +21,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// {1} - Page Size
         /// </summary>
         private const string SHIPPINGBYTOTAL_ALL_KEY = "Nop.shippingbytotal.all-{0}-{1}";
+
         private const string SHIPPINGBYTOTAL_PATTERN_KEY = "Nop.shippingbytotal.";
 
         #endregion Constants
@@ -58,7 +59,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <returns>ShippingByTotalRecord collection</returns>
         public virtual IPagedList<ShippingByTotalRecord> GetAllShippingByTotalRecords(int pageIndex = 0, int pageSize = int.MaxValue)
         {
-            var key = String.Format(SHIPPINGBYTOTAL_ALL_KEY, pageIndex, pageSize);
+            var key = string.Format(SHIPPINGBYTOTAL_ALL_KEY, pageIndex, pageSize);
             return _cacheManager.Get(key, () =>
             {
                 var query = from sbt in _sbtRepository.Table
@@ -204,7 +205,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             {
                 foreach (var sbtr in matchedByStateProvince)
                 {
-                    if (String.IsNullOrWhiteSpace(sbtr.ZipPostalCode))
+                    if (string.IsNullOrWhiteSpace(sbtr.ZipPostalCode))
                     {
                         matchedByZipPostalCode.Add(sbtr);
                     }
@@ -227,7 +228,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
                 return false;
             }
 
-            if (String.IsNullOrEmpty(zipPostalCode) && String.IsNullOrEmpty(shippingByTotalRecordZip))
+            if (string.IsNullOrEmpty(zipPostalCode) && string.IsNullOrEmpty(shippingByTotalRecordZip))
             {
                 return true;
             }
@@ -272,7 +273,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
                         var targetZip = zipPostalCode.ToLower().ToArray();
                         var wildcardZip = zipEntry.ToLower().ToArray();
 
-                        for (int x = 0; x < wildcardZip.Length; x++)
+                        for (var x = 0; x < wildcardZip.Length; x++)
                         {
                             if (wildcardZip[x] != '?' && targetZip[x] != wildcardZip[x])
                             {
@@ -369,7 +370,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
 
             _sbtRepository.Delete(shippingByTotalRecord);
 
-            _cacheManager.RemoveByPattern(SHIPPINGBYTOTAL_PATTERN_KEY);
+            _cacheManager.RemoveByPrefix(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         /// <summary>
@@ -385,7 +386,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
 
             _sbtRepository.Insert(shippingByTotalRecord);
 
-            _cacheManager.RemoveByPattern(SHIPPINGBYTOTAL_PATTERN_KEY);
+            _cacheManager.RemoveByPrefix(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         /// <summary>
@@ -401,7 +402,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
 
             _sbtRepository.Update(shippingByTotalRecord);
 
-            _cacheManager.RemoveByPattern(SHIPPINGBYTOTAL_PATTERN_KEY);
+            _cacheManager.RemoveByPrefix(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         /// <summary>
@@ -424,7 +425,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             {
                 _sbtRepository.Delete(shippingByTotalRecord);
             }
-            _cacheManager.RemoveByPattern(SHIPPINGBYTOTAL_PATTERN_KEY);
+            _cacheManager.RemoveByPrefix(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         #endregion Methods

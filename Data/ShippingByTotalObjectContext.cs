@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Nop.Core;
 using Nop.Data;
 using Nop.Data.Extensions;
 using Nop.Plugin.Shipping.ByTotal.Domain;
-using System;
-using System.Linq;
 
 namespace Nop.Plugin.Shipping.ByTotal.Data
 {
@@ -36,10 +36,10 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
 
         public virtual string GenerateCreateScript()
         {
-            return this.Database.GenerateCreateScript();
+            return Database.GenerateCreateScript();
         }
 
-        public virtual new DbSet<TEntity> Set<TEntity>() where TEntity : BaseEntity
+        public new virtual DbSet<TEntity> Set<TEntity>() where TEntity : BaseEntity
         {
             return base.Set<TEntity>();
         }
@@ -50,7 +50,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         public void Install()
         {
             // create table
-            this.ExecuteSqlScript(this.GenerateCreateScript());
+            this.ExecuteSqlScript(GenerateCreateScript());
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
             this.DropPluginTable(nameof(ShippingByTotalRecord));
         }
 
-        public virtual IQueryable<TQuery> QueryFromSql<TQuery>(string sql) where TQuery : class
+        public virtual IQueryable<TQuery> QueryFromSql<TQuery>(string sql, params object[] parameters) where TQuery : class
         {
             throw new NotImplementedException();
         }
@@ -82,9 +82,9 @@ namespace Nop.Plugin.Shipping.ByTotal.Data
         /// <returns>The result returned by the database after executing the command.</returns>
         public virtual int ExecuteSqlCommand(RawSqlString sql, bool doNotEnsureTransaction = false, int? timeout = null, params object[] parameters)
         {
-            using (var transaction = this.Database.BeginTransaction())
+            using (var transaction = Database.BeginTransaction())
             {
-                var result = this.Database.ExecuteSqlCommand(sql, parameters);
+                var result = Database.ExecuteSqlCommand(sql, parameters);
                 transaction.Commit();
 
                 return result;
