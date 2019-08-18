@@ -247,9 +247,9 @@ namespace Nop.Plugin.Shipping.ByTotal
 
             _objectContext.Install();
 
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle", "Add new 'Shipping By Total' record");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle", "Add new Shipping By Total record");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddRecord", "Add record");
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.EditRecordTitle", "Edit 'Shipping By Total' record");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.EditRecordTitle", "Edit Shipping By Total record");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country", "Country");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Country.Hint", "If an asterisk is selected, then this shipping rate will apply to all customers, regardless of the country.");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.DisplayOrder", "Display Order");
@@ -271,7 +271,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To", "Order total To");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.To.Hint", "Order total to.");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage", "Use percentage");
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage.Hint", "Check to use 'charge percentage' value.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.UsePercentage.Hint", "Check to use charge percentage value.");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Warehouse", "Warehouse");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.Warehouse.Hint", "This shipping rate will apply to all warehouses if an asterisk is selected.");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.Fields.ZipPostalCode", "ZIP / postal code");
