@@ -1,5 +1,6 @@
 ﻿using System;
 using Nop.Core;
+using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Shipping;
 using Nop.Plugin.Shipping.ByTotal.Data;
 using Nop.Plugin.Shipping.ByTotal.Services;
@@ -7,6 +8,7 @@ using Nop.Services.Catalog;
 using Nop.Services.Configuration;
 using Nop.Services.Localization;
 using Nop.Services.Logging;
+using Nop.Services.Orders;
 using Nop.Services.Plugins;
 using Nop.Services.Shipping;
 using Nop.Services.Shipping.Tracking;
@@ -26,9 +28,9 @@ namespace Nop.Plugin.Shipping.ByTotal
         private readonly IShippingByTotalService _shippingByTotalService;
         private readonly IShippingService _shippingService;
         private readonly IStoreContext _storeContext;
-        private readonly ShippingByTotalObjectContext _objectContext;
         private readonly ShippingByTotalSettings _shippingByTotalSettings;
         private readonly IWebHelper _webHelper;
+        private readonly IShoppingCartService _shoppingCartService;
 
         // same value as set in ShippingByTotalRecordMap
         public const int ZipPostalCodeMaxLength = 400;
@@ -49,9 +51,9 @@ namespace Nop.Plugin.Shipping.ByTotal
         /// <param name="shippingByTotalService">ShippingByTotal service</param>
         /// <param name="shippingService">Shipping service</param>
         /// <param name="storeContext">Store Context</param>
-        /// <param name="objectContext">ShippingByTotal object context</param>
         /// <param name="shippingByTotalSettings">ShippingByTotal settings</param>
         /// <param name="webHelper">Web Helper</param>
+        /// <param name="shoppingCartService">Shopping Cart service</param>
         public ByTotalShippingComputationMethod(
             ILocalizationService localizationService,
             ILogger logger,
@@ -62,16 +64,15 @@ namespace Nop.Plugin.Shipping.ByTotal
             IShippingByTotalService shippingByTotalService,
             IShippingService shippingService,
             IStoreContext storeContext,
-            ShippingByTotalObjectContext objectContext,
             ShippingByTotalSettings shippingByTotalSettings,
-            IWebHelper webHelper)
+            IWebHelper webHelper,
+            IShoppingCartService shoppingCartService)
         {
             _localizationService = localizationService;
             _logger = logger;
             _priceCalculationService = priceCalculationService;
             _productAttributeParser = productAttributeParser;
             _productService = productService;
-            _objectContext = objectContext;
             _priceCalculationService = priceCalculationService;
             _settingService = settingService;
             _shippingByTotalService = shippingByTotalService;
@@ -79,6 +80,7 @@ namespace Nop.Plugin.Shipping.ByTotal
             _shippingService = shippingService;
             _storeContext = storeContext;
             _webHelper = webHelper;
+            _shoppingCartService = shoppingCartService;
         }
 
         #endregion Ctor
@@ -197,11 +199,13 @@ namespace Nop.Plugin.Shipping.ByTotal
             var subTotal = decimal.Zero;
             foreach (var packageItem in getShippingOptionRequest.Items)
             {
-                if (packageItem.ShoppingCartItem.Product.IsFreeShipping)
+                var product = _productService.GetProductById(packageItem.ShoppingCartItem.ProductId);
+                if(product.IsFreeShipping)
                 {
                     continue;
                 }
-                subTotal += _priceCalculationService.GetSubTotal(packageItem.ShoppingCartItem, true);
+
+                subTotal += _shoppingCartService.GetSubTotal(packageItem.ShoppingCartItem, true);
             }
 
             var shippingMethods = _shippingService.GetAllShippingMethods(countryId);
@@ -245,7 +249,6 @@ namespace Nop.Plugin.Shipping.ByTotal
             //settings
             _settingService.SaveSetting(new ShippingByTotalSettings());
 
-            _objectContext.Install();
 
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle", "Add new Shipping By Total record");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Shipping.ByTotal.AddRecord", "Add record");
@@ -301,7 +304,6 @@ namespace Nop.Plugin.Shipping.ByTotal
         {
             _settingService.DeleteSetting<ShippingByTotalSettings>();
 
-            _objectContext.Uninstall();
 
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.AddNewRecordTitle");
             _localizationService.DeletePluginLocaleResource("Plugins.Shipping.ByTotal.AddRecord");

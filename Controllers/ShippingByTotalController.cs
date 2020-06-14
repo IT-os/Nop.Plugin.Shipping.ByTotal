@@ -121,7 +121,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return View("~/Plugins/Shipping.ByTotal/Views/Configure.cshtml", model);
         }
 
-        [HttpPost, AdminAntiForgery]
+        //[HttpPost]  //TODO: Determine how to add back AdminAntiForgery
+        [HttpPost]
         public IActionResult RatesList(ConfigurationModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
@@ -182,7 +183,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return Json(gridModel);
         }
 
-        [HttpPost, AdminAntiForgery]
+        [HttpPost]  //TODO: Determine how to add back AdminAntiForgery
         public IActionResult GetRate(int id)
         {
             var shippingByTotalRecord = _shippingByTotalService.GetShippingByTotalRecordById(id);
@@ -211,7 +212,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return new NullJsonResult();
         }
 
-        [HttpPost, AdminAntiForgery]
+        [HttpPost]  //TODO: Determine how to add back AdminAntiForgery
         public IActionResult RateUpdate(ShippingByTotalModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
@@ -237,7 +238,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return new NullJsonResult();
         }
 
-        [HttpPost, AdminAntiForgery]
+        [HttpPost]  //TODO: Determine how to add back AdminAntiForgery
         public IActionResult RateDelete(int id)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
@@ -253,7 +254,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return new NullJsonResult();
         }
 
-        [HttpPost, AdminAntiForgery]
+        [HttpPost]  //TODO: Determine how to add back AdminAntiForgery
         public IActionResult AddShippingRate(ShippingByTotalModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
@@ -293,7 +294,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Controllers
             return Json(new { Result = true });
         }
 
-        [HttpPost, AdminAntiForgery]
+        [HttpPost]  //TODO: Determine how to add back AdminAntiForgery
         public IActionResult SaveGeneralSettings(ConfigurationModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
