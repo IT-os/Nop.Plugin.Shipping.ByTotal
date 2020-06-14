@@ -3,7 +3,7 @@
   "FriendlyName": "Shipping by total",
   "SystemName": "Shipping.ByTotal",
   "Version": "1.26",
-  "SupportedVersions": [ "4.20" ],
+  "SupportedVersions": [ "4.30" ],
   "Author": "mb",
   "DisplayOrder": 1,
   "FileName": "Nop.Plugin.Shipping.ByTotal.dll",

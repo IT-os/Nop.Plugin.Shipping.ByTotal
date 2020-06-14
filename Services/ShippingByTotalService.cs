@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Nop.Core;
 using Nop.Core.Caching;
-using Nop.Core.Data;
 using Nop.Core.Domain.Shipping;
+using Nop.Data;
 using Nop.Plugin.Shipping.ByTotal.Domain;
+using Nop.Services.Caching;
 
 namespace Nop.Plugin.Shipping.ByTotal.Services
 {
@@ -20,16 +21,16 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// {0} - Page Index
         /// {1} - Page Size
         /// </summary>
-        private const string SHIPPINGBYTOTAL_ALL_KEY = "Nop.shippingbytotal.all-{0}-{1}";
-
-        private const string SHIPPINGBYTOTAL_PATTERN_KEY = "Nop.shippingbytotal.";
+        private readonly CacheKey SHIPPINGBYTOTAL_ALL_KEY = new CacheKey("Nop.shippingbytotal.all-{0}-{1}");
+        private readonly CacheKey SHIPPINGBYTOTAL_PATTERN_KEY = new CacheKey("NoNop.shippingbytotal.");
 
         #endregion Constants
 
         #region Fields
 
-        private readonly ICacheManager _cacheManager;
         private readonly IRepository<ShippingByTotalRecord> _sbtRepository;
+        private readonly ICacheKeyService _cacheKeyService;
+        private readonly IStaticCacheManager _staticCacheManager;
 
         #endregion Fields
 
@@ -38,13 +39,14 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <summary>
         /// Ctor
         /// </summary>
-        /// <param name="cacheManager">Cache manager</param>
+        /// <param name="staticCacheManager">Cache manager</param>
         /// <param name="sbtRepository">ShippingByTotal Repository</param>
-        public ShippingByTotalService(ICacheManager cacheManager,
-            IRepository<ShippingByTotalRecord> sbtRepository)
+        public ShippingByTotalService(IStaticCacheManager staticCacheManager,
+            IRepository<ShippingByTotalRecord> sbtRepository, ICacheKeyService cacheKeyService)
         {
-            _cacheManager = cacheManager;
+            _staticCacheManager = staticCacheManager;
             _sbtRepository = sbtRepository;
+            _cacheKeyService = cacheKeyService;
         }
 
         #endregion Ctor
@@ -59,8 +61,8 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
         /// <returns>ShippingByTotalRecord collection</returns>
         public virtual IPagedList<ShippingByTotalRecord> GetAllShippingByTotalRecords(int pageIndex = 0, int pageSize = int.MaxValue)
         {
-            var key = string.Format(SHIPPINGBYTOTAL_ALL_KEY, pageIndex, pageSize);
-            return _cacheManager.Get(key, () =>
+            var key = _cacheKeyService.PrepareKeyForShortTermCache(SHIPPINGBYTOTAL_ALL_KEY, pageIndex, pageSize);
+            return _staticCacheManager.Get(key, () =>
             {
                 var query = from sbt in _sbtRepository.Table
                             orderby sbt.StoreId, sbt.CountryId, sbt.StateProvinceId, sbt.DisplayOrder, sbt.ShippingMethodId, sbt.From, sbt.Id
@@ -370,7 +372,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
 
             _sbtRepository.Delete(shippingByTotalRecord);
 
-            _cacheManager.RemoveByPrefix(SHIPPINGBYTOTAL_PATTERN_KEY);
+            _staticCacheManager.Remove(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         /// <summary>
@@ -386,7 +388,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
 
             _sbtRepository.Insert(shippingByTotalRecord);
 
-            _cacheManager.RemoveByPrefix(SHIPPINGBYTOTAL_PATTERN_KEY);
+            _staticCacheManager.Remove(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         /// <summary>
@@ -402,7 +404,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
 
             _sbtRepository.Update(shippingByTotalRecord);
 
-            _cacheManager.RemoveByPrefix(SHIPPINGBYTOTAL_PATTERN_KEY);
+            _staticCacheManager.Remove(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         /// <summary>
@@ -425,7 +427,7 @@ namespace Nop.Plugin.Shipping.ByTotal.Services
             {
                 _sbtRepository.Delete(shippingByTotalRecord);
             }
-            _cacheManager.RemoveByPrefix(SHIPPINGBYTOTAL_PATTERN_KEY);
+            _staticCacheManager.Remove(SHIPPINGBYTOTAL_PATTERN_KEY);
         }
 
         #endregion Methods
